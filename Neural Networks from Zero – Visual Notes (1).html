@@ -1,0 +1,187 @@
+<!DOCTYPE html><html lang="en" data-theme="galaxy"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Neural Networks from Zero – Visual Notes</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:inherit}html{scroll-padding-top:70px}
+[data-theme=galaxy]{--bg:radial-gradient(ellipse at 30% 20%,#2b1269,#0b0620 60%,#050212);--fg:#f1eefe;--card:rgba(24,14,60,.8);--a:#a78bfa;--b:#60a5fa;--m:#c4bde6;--bt:#0b0620}
+[data-theme=hole]{--bg:radial-gradient(circle,#1a0f05,#050505 65%);--fg:#fff4e8;--card:rgba(20,12,8,.82);--a:#ff9a3c;--b:#ffe2b8;--m:#e0c6aa;--bt:#1a0f05}
+[data-theme=nova]{--bg:radial-gradient(circle,#4a0d0d,#12040a 70%);--fg:#fff1e6;--card:rgba(40,8,8,.8);--a:#ff6a3d;--b:#ffd23f;--m:#ecc4b2;--bt:#2a0606}
+[data-theme=aurora]{--bg:linear-gradient(180deg,#03140f,#06222a 60%,#02090d);--fg:#e9fff7;--card:rgba(4,30,30,.8);--a:#3dffa7;--b:#2dd4d4;--m:#acdfd0;--bt:#02140f}
+[data-theme=neon]{--bg:linear-gradient(180deg,#0a0414,#1a0630 60%,#080214);--fg:#f6eaff;--card:rgba(20,6,40,.82);--a:#ff2bd6;--b:#22e6ff;--m:#d2b4ec;--bt:#12041e}
+[data-theme=ocean]{--bg:linear-gradient(180deg,#021b3a,#03304f 60%,#010d1c);--fg:#e8f6ff;--card:rgba(2,35,66,.8);--a:#35d0ff;--b:#5cffc8;--m:#a9d0e6;--bt:#021b3a}
+[data-theme=sunset]{--bg:linear-gradient(180deg,#2a0a4a,#a1296b 45%,#ff8a3d);--fg:#fff7ef;--card:rgba(50,10,64,.8);--a:#ffb347;--b:#ff6fa8;--m:#f6d8e6;--bt:#2a0a4a}
+[data-theme=paper]{--bg:#f6f3ec;--fg:#1d2230;--card:rgba(255,255,255,.94);--a:#4f46e5;--b:#0891b2;--m:#505a6c;--bt:#fff}
+body{margin:0;background:var(--bg) fixed;color:var(--fg);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh}
+#bg{position:fixed;inset:0;z-index:0;pointer-events:none}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;padding:8px;background:var(--card);backdrop-filter:blur(8px)}
+nav button{font-size:13px;padding:5px 10px;background:transparent;color:var(--fg);border:1px solid var(--a)}
+nav button.on{background:linear-gradient(90deg,var(--a),var(--b));color:var(--bt)}
+main{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:12px 14px 40px}
+h1{font-size:clamp(26px,6vw,42px);margin:18px 0 6px;background:linear-gradient(90deg,var(--a),var(--b));-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{margin:0 0 6px;font-size:22px;color:var(--a)}h3{margin:12px 0 4px;font-size:16px;color:var(--b)}
+.card{background:var(--card);border:1px solid color-mix(in srgb,var(--a) 45%,transparent);border-radius:16px;padding:16px;margin:16px 0;backdrop-filter:blur(6px)}
+.m{color:var(--m);margin:4px 0 10px}.row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start}
+button{background:linear-gradient(90deg,var(--a),var(--b));color:var(--bt);border:0;border-radius:10px;padding:7px 12px;font-weight:700;cursor:pointer;font-size:14px}
+select,input[type=text]{background:transparent;color:var(--fg);border:1px solid var(--a);border-radius:8px;padding:6px;font-size:14px;width:100%}
+select option{color:#111}input[type=range]{width:100%;accent-color:var(--a)}
+label{display:block;font-size:13px;color:var(--m)}.sl{min-width:150px;flex:1}
+svg{max-width:100%;height:auto}svg text{fill:var(--fg);font-size:12px;font-family:inherit}svg line,svg path{stroke:var(--m);stroke-width:1.5;fill:none}
+canvas.sim{max-width:100%;border:1px solid var(--a);border-radius:10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{padding:5px 10px;border-radius:20px;border:1px solid var(--a);font-size:13px;transition:.3s}
+.chip.on{background:linear-gradient(90deg,var(--a),var(--b));color:var(--bt);transform:scale(1.08)}
+.out{font-family:ui-monospace,Menlo,monospace;font-size:13px;color:var(--b);margin:6px 0}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}.g>div{border:1px solid var(--a);border-radius:12px;padding:10px;font-size:14px}
+.grid{display:grid;gap:1px}.grid div{width:24px;height:24px;font-size:9px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(128,128,128,.3);cursor:pointer}
+table{border-collapse:collapse;width:100%;font-size:14px}td,th{border:1px solid var(--a);padding:6px;text-align:left}th{color:var(--b)}
+.f{background:color-mix(in srgb,var(--a) 20%,transparent);padding:2px 6px;border-radius:6px;font-family:ui-monospace,monospace}
+a{color:var(--b)}footer{text-align:center;color:var(--m);font-size:13px}
+@media(prefers-reduced-motion:reduce){.chip{transition:none}}
+</style></head><body><canvas id="bg"></canvas>
+<svg width="0" height="0" style="position:absolute"><defs><marker id="ar" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="#ff5d8f" stroke="none"/></marker></defs></svg>
+<nav id="sw" aria-label="Theme switcher"></nav>
+<main>
+<h1>🧠 Neural Networks from Zero</h1>
+<p class="m">Visual notes for complete beginners: touch the sliders, press the buttons, watch it work. Read top to bottom once, then use the cheat sheet at the end for quick revision.</p>
+<div class="chips" id="toc"></div>
+
+<section class="card" id="s1"><h2>1. Neuron: the tiny decision maker</h2>
+<p class="m">Idea: multiply each input by its <b>weight</b> (importance), add a <b>bias</b> (starting push), then squash with an <b>activation</b> (sigmoid gives 0 to 1).</p>
+<svg viewBox="0 0 420 170" width="460"><line x1="78" y1="50" x2="195" y2="80"/><line x1="78" y1="120" x2="195" y2="92"/><line x1="266" y1="85" x2="335" y2="85"/>
+<circle cx="50" cy="50" r="26" fill="var(--b)" fill-opacity=".4" stroke="var(--b)"/><circle cx="50" cy="120" r="26" fill="var(--b)" fill-opacity=".4" stroke="var(--b)"/>
+<circle id="nc" cx="230" cy="85" r="36" fill="var(--a)" stroke="var(--a)"/><circle cx="370" cy="85" r="26" fill="none" stroke="var(--a)"/>
+<text x="38" y="54">x1=<tspan id="tx1"></tspan></text><text x="38" y="124">x2=<tspan id="tx2"></tspan></text><text x="110" y="52" id="tw1"></text><text x="110" y="122" id="tw2"></text>
+<text x="205" y="89" id="tz"></text><text x="352" y="89" id="ty"></text><text x="196" y="138">Σ + bias → sigmoid</text><text x="345" y="130">output</text></svg>
+<div class="row" id="c1"></div><div class="out" id="nl"></div></section>
+
+<section class="card" id="s2"><h2>2. Perceptron: one neuron that learns a line</h2>
+<p class="m">A perceptron guesses 0 or 1. When it is wrong, it nudges weights: <span class="f">w = w + lr × error × x</span>. Colour = what it predicts. Dots: green = should be 1, pink = should be 0.</p>
+<div class="row"><canvas class="sim" id="pc" width="240" height="240"></canvas><div class="sl"><label>Logic gate to learn</label><select id="gt"><option>AND</option><option>OR</option><option>XOR</option></select><p></p>
+<button id="p1">Train 1 sample</button> <button id="pa">Auto-train</button> <button id="pr">Reset</button><div class="out" id="pt"></div>
+<p class="m">Try XOR: it never settles. One straight line cannot separate it, so we need layers (next section).</p></div></div></section>
+
+<section class="card" id="s3"><h2>3. Multilayer Perceptron &amp; Feed-Forward</h2>
+<p class="m">Stack neurons in layers: <b>input → hidden → output</b>. Data only moves forward (feed-forward). Hidden layers let the network bend the line and solve harder problems. Brightness = how strongly a neuron fires.</p>
+<div id="ms"></div><div class="row"><div class="sl"><label>Input x1: <b id="v1">0.8</b></label><input type="range" id="mx1" min="0" max="1" step=".05" value=".8"></div><div class="sl"><label>Input x2: <b id="v2">0.3</b></label><input type="range" id="mx2" min="0" max="1" step=".05" value=".3"></div></div>
+<p class="m">Blue lines = positive weights, pink = negative; thicker = stronger. Activation functions: <b>sigmoid</b> (0 to 1), <b>tanh</b> (−1 to 1), <b>ReLU</b> (max(0, z), the most common today).</p></section>
+
+<section class="card" id="s4"><h2>4. Backpropagation: how a network learns</h2>
+<div class="chips" id="bp"><span class="chip">1 Forward pass: predict</span><span class="chip">2 Loss: how wrong?</span><span class="chip">3 Backward: blame each weight</span><span class="chip">4 Update: w = w − lr × gradient</span></div>
+<p class="m">Chain rule: <span class="f">dLoss/dw = dLoss/dy × dy/dz × dz/dw</span>. The error is sent backwards layer by layer, telling each weight which way to move. Simulation: loss = (w − 3)², the best weight is 3. The ball rolls downhill.</p>
+<div class="row"><canvas class="sim" id="gc" width="420" height="200"></canvas><div class="sl"><label>Learning rate: <b id="lv">0.20</b></label><input type="range" id="lr" min=".01" max="1.1" step=".01" value=".2">
+<button id="g1">Step</button> <button id="ga">Auto</button> <button id="gr">Reset</button><div class="out" id="gt2"></div><p class="m">Tiny lr = slow. Good lr = smooth. lr above 1 = ball jumps out and diverges.</p></div></div></section>
+
+<section class="card" id="s5"><h2>5. Recurrent Neural Network (RNN): a network with memory</h2>
+<p class="m">Normal networks forget the past. An RNN passes a <b>hidden state h</b> from one step to the next, so it can read sequences (words, sound, prices). Formula: <span class="f">h(t) = tanh(Wxh·x(t) + Whh·h(t−1) + b)</span> and <span class="f">y(t) = Why·h(t)</span>.</p>
+<label>Type a sentence (each word length becomes its input value)</label><input type="text" id="rt" value="I really love deep learning">
+<p><button id="rf">▶ Forward in time</button> <button id="rb">◀ Backprop through time (BPTT)</button></p><div id="rs"></div><div class="out" id="ro"></div>
+<p class="m"><b>BPTT</b> = backpropagation on the unrolled network: the error flows back through every time step. Each step multiplies the gradient by a number below 1, so the oldest words get almost no learning signal (<b>vanishing gradient</b>). LSTM and GRU fix this with gates.</p>
+<h3>Notation</h3><table><tr><th>Symbol</th><th>Meaning</th></tr><tr><td>x(t)</td><td>input at time step t (a word)</td></tr><tr><td>h(t)</td><td>hidden state (memory) at step t</td></tr><tr><td>y(t)</td><td>output at step t</td></tr><tr><td>Wxh, Whh, Why</td><td>weights: input→hidden, hidden→hidden (the loop), hidden→output (shared across all steps)</td></tr><tr><td>Tx</td><td>length of the input sequence</td></tr></table>
+<h3>Different types of RNNs</h3><div class="g" id="rty"></div></section>
+
+<section class="card" id="s6"><h2>6. Hyper-parameter tuning</h2>
+<p class="m">Parameters (weights) are learned by the network. <b>Hyper-parameters</b> are settings YOU choose before training.</p>
+<div class="g"><div><b>Learning rate</b><br>Step size (section 4 demo). Most important.</div><div><b>Batch size</b><br>Samples seen before one update: 16, 32, 64.</div><div><b>Epochs</b><br>Full passes over data. Too many = overfitting.</div><div><b>Layers &amp; neurons</b><br>Bigger = more power but more overfit risk.</div><div><b>Dropout</b><br>Randomly switch off neurons (0.2 to 0.5) to avoid overfitting.</div><div><b>Optimizer</b><br>SGD, Adam (a safe default), RMSprop.</div></div>
+<h3>How to search</h3><div class="chips"><span class="chip">Grid search: try every combination</span><span class="chip">Random search: faster, often better</span><span class="chip">Bayesian: learns from past trials</span><span class="chip">Always tune on a validation set, never the test set</span></div></section>
+
+<section class="card" id="s7"><h2>7. Image classification with a CNN</h2>
+<p class="m">A Convolutional Neural Network slides a small <b>filter</b> (3×3 numbers) over the image to detect patterns. Click the input pixels to draw your own shape, pick a filter, press Slide.</p>
+<div class="row"><div class="sl"><label>Filter</label><select id="kf"><option value="0">Vertical edge detector</option><option value="1">Horizontal edge detector</option><option value="2">Blur (average)</option></select><p><button id="ks">▶ Slide filter</button></p><div class="out" id="ko"></div></div></div>
+<div class="row"><div><label>Input 8×8 (click)</label><div class="grid" id="gi" style="grid-template-columns:repeat(8,24px)"></div></div><div><label>Feature map 6×6 (+ReLU)</label><div class="grid" id="gf" style="grid-template-columns:repeat(6,24px)"></div></div><div><label>Max-pool 3×3</label><div class="grid" id="gp" style="grid-template-columns:repeat(3,24px)"></div></div></div>
+<h3>Full CNN pipeline</h3><div class="chips" id="cp"><span class="chip">Image</span><span class="chip">Conv + ReLU</span><span class="chip">Pooling</span><span class="chip">Conv + ReLU</span><span class="chip">Pooling</span><span class="chip">Flatten</span><span class="chip">Dense</span><span class="chip">Softmax → Cat 92%</span></div>
+<h3>Understanding &amp; visualizing a CNN</h3><div class="g"><div><b>Early layers</b><br>Edges and colours (what you just simulated).</div><div><b>Middle layers</b><br>Textures, corners, eyes, wheels.</div><div><b>Deep layers</b><br>Whole objects: face, car, tumour.</div><div><b>Feature maps</b><br>Plot each layer’s output to see what it detects.</div><div><b>Grad-CAM</b><br>Heat-map showing which pixels drove the decision.</div><div><b>Filter visualization</b><br>Find the image that excites a filter most.</div></div></section>
+
+<section class="card" id="s8"><h2>8. Text classification</h2>
+<p class="m">Pipeline: <b>Text → tokens (words) → numbers (embeddings) → RNN / CNN → class</b>. Mini demo: every word has a score; the sum decides positive or negative sentiment (a tiny model of what a real network learns).</p>
+<input type="text" id="tt" value="the movie was great but the ending was boring and bad"><div class="chips" id="tc" style="margin:10px 0"></div>
+<svg viewBox="0 0 400 34" width="420"><rect x="2" y="8" width="396" height="18" rx="9" fill="none" stroke="var(--a)"/><rect id="tb" x="200" y="8" width="0" height="18" rx="9" fill="var(--a)"/><line x1="200" y1="4" x2="200" y2="30"/></svg><div class="out" id="to"></div></section>
+
+<section class="card" id="s9"><h2>9. Case studies</h2><div class="g">
+<div><b>🏥 Health care</b><br>Data: X-ray, skin and retina images, patient records.<br>Model: CNN for images, RNN for vital-sign time series.<br>Result: early disease detection, e.g. diabetic foot ulcer or tumour classification.</div>
+<div><b>🛒 E-commerce</b><br>Data: clicks, purchases, reviews, product photos.<br>Model: MLP/RNN for recommendations, text classification for reviews, CNN for visual search.<br>Result: “you may also like”, fake-review detection, demand forecasts.</div>
+<div><b>🏙️ Smart cities</b><br>Data: traffic cameras, sensors, power meters.<br>Model: CNN counts vehicles, RNN predicts traffic and energy use.<br>Result: smart signals, less jam, waste and energy savings.</div></div></section>
+
+<section class="card" id="s10"><h2>10. Quick revision cheat sheet</h2><table>
+<tr><th>Topic</th><th>One line</th></tr><tr><td>Neuron</td><td>sigmoid(Σ w·x + b)</td></tr><tr><td>Perceptron</td><td>One neuron, draws one line; fails on XOR</td></tr><tr><td>MLP / Feed-forward</td><td>Layers; data flows forward only</td></tr><tr><td>Backpropagation</td><td>Forward → loss → backward gradients → update weights</td></tr><tr><td>RNN</td><td>Hidden state carries memory across time steps</td></tr><tr><td>BPTT</td><td>Backprop over unrolled steps; gradients can vanish</td></tr><tr><td>RNN types</td><td>1→1, 1→N, N→1, N→N (same), N→M (encoder-decoder)</td></tr><tr><td>Hyper-parameters</td><td>lr, batch, epochs, layers, dropout: tune on validation data</td></tr><tr><td>CNN</td><td>Conv filters → pooling → dense → softmax</td></tr><tr><td>Text classification</td><td>Tokenize → embed → RNN/CNN → softmax</td></tr></table></section>
+<footer>Prepared for Vikash Patel</footer></main>
+<script>
+const $=s=>document.querySelector(s),sg=x=>1/(1+Math.exp(-x)),cs=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+/* theme + background */
+const TH=[['galaxy','🌌 Galaxy'],['hole','🕳️ Black Hole'],['nova','💥 Supernova'],['aurora','🌿 Aurora'],['neon','🌆 Cyberpunk'],['ocean','🌊 Deep Ocean'],['sunset','🌅 Sunset Retro'],['paper','📄 Light Paper']];
+const cv=$('#bg'),c=cv.getContext('2d');let W,H,P=[],mode='galaxy';
+function rs(){W=cv.width=innerWidth;H=cv.height=innerHeight}addEventListener('resize',rs);rs();
+for(let i=0;i<130;i++)P.push({x:Math.random(),y:Math.random(),r:Math.random()*2+.6,a:Math.random()*6.28,s:Math.random()*.9+.3,d:Math.random()*.4+.08});
+function frame(t){c.clearRect(0,0,W,H);const m=mode,cx=W/2,cy=H/2;
+if(m=='galaxy')P.forEach(p=>{c.fillStyle=`rgba(255,255,255,${.5+.5*Math.sin(t*.002*p.s+p.a)})`;c.beginPath();c.arc(p.x*W,p.y*H,p.r,0,7);c.fill()});
+else if(m=='hole'){let g=c.createRadialGradient(cx,cy,10,cx,cy,Math.min(W,H)*.5);g.addColorStop(0,'rgba(255,200,120,.5)');g.addColorStop(.4,'rgba(255,120,30,.15)');g.addColorStop(1,'transparent');c.fillStyle=g;c.fillRect(0,0,W,H);
+P.forEach(p=>{const an=p.a+t*.0004/p.d,r=p.d*Math.min(W,H)*1.1,x=cx+Math.cos(an)*r*1.5,y=cy+Math.sin(an)*r*.38;c.fillStyle=`rgba(255,${190-p.d*250|0},${120-p.d*200|0},.85)`;c.beginPath();c.arc(x,y,p.r,0,7);c.fill()});c.fillStyle='#000';c.beginPath();c.arc(cx,cy,34,0,7);c.fill()}
+else if(m=='nova')P.forEach(p=>{const l=(t*.00012*p.s+p.a)%1,r=l*Math.max(W,H)*.6,an=p.a*9;c.fillStyle=`hsla(${10+l*50},100%,${55+l*10}%,${1-l})`;c.beginPath();c.arc(cx+Math.cos(an)*r,cy+Math.sin(an)*r,p.r*(2-l),0,7);c.fill()});
+else if(m=='aurora'){for(let k=0;k<4;k++){c.beginPath();for(let x=0;x<=W;x+=20){const y=H*.28+Math.sin(x*.004+t*.0005+k)*60+k*38;x?c.lineTo(x,y):c.moveTo(x,y)}c.strokeStyle=`hsla(${150+k*22},85%,60%,.2)`;c.lineWidth=34;c.stroke()}P.slice(0,50).forEach(p=>{c.fillStyle='rgba(255,255,255,.5)';c.fillRect(p.x*W,p.y*H*.6,p.r,p.r)})}
+else if(m=='neon'){const hz=H*.55;c.lineWidth=1.2;for(let i=0;i<14;i++){const y=hz+(H-hz)*Math.pow(((i+(t*.0006)%1)/14),2);c.strokeStyle='rgba(34,230,255,.4)';c.beginPath();c.moveTo(0,y);c.lineTo(W,y);c.stroke()}for(let x=-12;x<=12;x++){c.strokeStyle='rgba(255,43,214,.4)';c.beginPath();c.moveTo(cx+x*18,hz);c.lineTo(cx+x*W/12,H);c.stroke()}}
+else if(m=='ocean')P.forEach(p=>{const y=((p.y*H-t*.03*p.s)%H+H)%H,x=p.x*W+Math.sin(t*.001+p.a)*14;c.strokeStyle='rgba(92,255,200,.5)';c.fillStyle='rgba(53,208,255,.12)';c.beginPath();c.arc(x,y,p.r*4,0,7);c.fill();c.stroke()});
+else if(m=='sunset'){let g=c.createLinearGradient(0,H*.4,0,H*.75);g.addColorStop(0,'#ffe27a');g.addColorStop(1,'#ff4f9a');c.fillStyle=g;c.beginPath();c.arc(cx,H*.62,Math.min(W,H)*.2,0,7);c.fill();c.fillStyle='rgba(42,10,74,.7)';for(let i=0;i<6;i++)c.fillRect(0,H*.62+i*i*5+(Math.sin(t*.001+i)*3),W,4+i*2);P.slice(0,40).forEach(p=>{c.fillStyle='rgba(255,255,255,.35)';c.fillRect(((p.x*W+t*.02*p.s)%W),p.y*H*.4,p.r,p.r)})}
+else P.slice(0,60).forEach(p=>{c.fillStyle='rgba(79,70,229,.13)';c.beginPath();c.arc((p.x*W+Math.sin(t*.0003+p.a)*30),((p.y*H-t*.01*p.s)%H+H)%H,p.r*3,0,7);c.fill()});
+requestAnimationFrame(frame)}requestAnimationFrame(frame);
+TH.forEach(([k,n],i)=>{const b=document.createElement('button');b.textContent=n;b.onclick=()=>{mode=k;document.documentElement.dataset.theme=k;[...$('#sw').children].forEach(x=>x.classList.remove('on'));b.classList.add('on');redraw()};if(!i)b.classList.add('on');$('#sw').append(b)});
+$('#toc').innerHTML=[['s1','Neuron'],['s2','Perceptron'],['s3','MLP'],['s4','Backprop'],['s5','RNN / BPTT'],['s6','Hyper-parameters'],['s7','CNN'],['s8','Text'],['s9','Case studies'],['s10','Cheat sheet']].map(([i,n])=>`<a class="chip" href="#${i}">${n}</a>`).join('');
+const sl=(id,l,mn,mx,st,v)=>`<div class="sl"><label>${l}: <b id="o${id}">${v}</b></label><input type="range" id="${id}" min="${mn}" max="${mx}" step="${st}" value="${v}"></div>`;
+/* 1 neuron */
+$('#c1').innerHTML=sl('i1','Input x1',0,1,.1,.8)+sl('i2','Input x2',0,1,.1,.4)+sl('i3','Weight w1',-3,3,.1,1.5)+sl('i4','Weight w2',-3,3,.1,-1)+sl('i5','Bias b',-3,3,.1,0);
+function n1(){const v=i=>{const x=+$('#i'+i).value;$('#oi'+i).textContent=x;return x},x1=v(1),x2=v(2),w1=v(3),w2=v(4),b=v(5),z=x1*w1+x2*w2+b,y=sg(z);
+$('#tx1').textContent=x1;$('#tx2').textContent=x2;$('#tw1').textContent='w1='+w1;$('#tw2').textContent='w2='+w2;$('#tz').textContent='z='+z.toFixed(2);$('#ty').textContent=y.toFixed(2);$('#nc').setAttribute('fill-opacity',.12+.88*y);
+$('#nl').textContent=`z = ${x1}×${w1} + ${x2}×${w2} + ${b} = ${z.toFixed(2)}  →  output = ${y.toFixed(2)}  (${y>.5?'neuron FIRES':'neuron stays quiet'})`}
+$('#c1').oninput=n1;n1();
+/* 2 perceptron */
+const GT={AND:[0,0,0,1],OR:[0,1,1,1],XOR:[0,1,1,0]},PT=[[0,0],[0,1],[1,0],[1,1]];let pw,pb,pi,pe,pm,pa;
+function pr(){pw=[0,0];pb=0;pi=0;pe=0;pm='Press “Train 1 sample”.';clearInterval(pa);pd()}
+function pd(){const k=$('#pc'),x=k.getContext('2d'),g=$('#gt').value,S=240,mp=v=>(v+.3)/1.6*S;x.clearRect(0,0,S,S);
+for(let i=0;i<20;i++)for(let j=0;j<20;j++){const X=-.3+i/20*1.6+.04,Y=-.3+j/20*1.6+.04;x.globalAlpha=.22;x.fillStyle=(pw[0]*X+pw[1]*Y+pb>0)?cs('--a'):'#ff5d8f';x.fillRect(i*12,S-(j+1)*12,12,12)}x.globalAlpha=1;
+PT.forEach((p,i)=>{x.beginPath();x.arc(mp(p[0]),S-mp(p[1]),10,0,7);x.fillStyle=GT[g][i]?'#2ee59d':'#ff5d8f';x.fill();if(i==pi){x.lineWidth=3;x.strokeStyle=cs('--fg');x.stroke()}});
+$('#pt').textContent=`${pm}\nw1=${pw[0].toFixed(1)} w2=${pw[1].toFixed(1)} b=${pb.toFixed(1)}  epoch ${pe}`}
+function ps(){const x=PT[pi],t=GT[$('#gt').value][pi],y=(pw[0]*x[0]+pw[1]*x[1]+pb>0)?1:0,e=t-y;pm=`Sample (${x}) target ${t}, predicted ${y}: ${e?'WRONG, update weights':'correct'}`;pw[0]+=.5*e*x[0];pw[1]+=.5*e*x[1];pb+=.5*e;pi=(pi+1)%4;if(!pi)pe++;pd()}
+$('#p1').onclick=ps;$('#pr').onclick=pr;$('#gt').onchange=pr;$('#pa').onclick=()=>{clearInterval(pa);pa=setInterval(()=>{ps();if(pe>40)clearInterval(pa)},350)};$('#pt').style.whiteSpace='pre';pr();
+/* 3 mlp */
+const W1=[[1.6,-2.2,1],[-1.3,2,1.5]],B1=[-.3,.4,-.6],W2=[2.2,-2.4,1.9],B2=-.6;
+function md(){const a=+$('#mx1').value,b=+$('#mx2').value;$('#v1').textContent=a;$('#v2').textContent=b;const h=[0,1,2].map(j=>sg(a*W1[0][j]+b*W1[1][j]+B1[j])),o=sg(h[0]*W2[0]+h[1]*W2[1]+h[2]*W2[2]+B2),
+I=[[60,50,a],[60,150,b]],Hs=[0,1,2].map(j=>[210,30+j*55,h[j]]);let s='<svg viewBox="0 0 420 190" width="480">';
+const ed=(p,q,w)=>`<line x1="${p[0]}" y1="${p[1]}" x2="${q[0]}" y2="${q[1]}" style="stroke:${w>0?cs('--b'):'#ff5d8f'};stroke-width:${Math.abs(w)*1.6}"/>`;
+I.forEach((p,i)=>Hs.forEach((q,j)=>s+=ed(p,q,W1[i][j])));Hs.forEach((q,j)=>s+=ed(q,[360,95],W2[j]));
+const nd=(p,l)=>`<circle cx="${p[0]}" cy="${p[1]}" r="22" fill="${cs('--a')}" fill-opacity="${.1+.9*p[2]}" stroke="${cs('--a')}"/><text x="${p[0]}" y="${p[1]+4}" text-anchor="middle" style="font-weight:700">${p[2].toFixed(2)}</text><text x="${p[0]}" y="${p[1]-27}" text-anchor="middle">${l||''}</text>`;
+I.forEach((p,i)=>s+=nd(p,i?'x2':'x1'));Hs.forEach((p,j)=>s+=nd(p,'h'+(j+1)));s+=nd([360,95,o],'output');$('#ms').innerHTML=s+'<text x="40" y="185">Input layer</text><text x="175" y="185">Hidden layer</text><text x="330" y="185">Output layer</text></svg>'}
+$('#mx1').oninput=$('#mx2').oninput=md;md();
+/* 4 gradient descent */
+let gw,gn,gp;const L=w=>(w-3)**2;
+function gd(){const k=$('#gc'),x=k.getContext('2d'),w0=420,h0=200,X=w=>(w+1)/8*w0,Y=l=>h0-14-Math.min(l,18)/18*(h0-30);x.clearRect(0,0,w0,h0);x.beginPath();for(let w=-1;w<=7;w+=.1)w==-1?x.moveTo(X(w),Y(L(w))):x.lineTo(X(w),Y(L(w)));x.strokeStyle=cs('--a');x.lineWidth=3;x.stroke();
+const wc=Math.max(-1,Math.min(7,gw));x.beginPath();x.arc(X(wc),Y(L(wc)),9,0,7);x.fillStyle='#ffd23f';x.fill();x.fillStyle=cs('--fg');x.font='12px sans-serif';x.fillText('best w = 3',X(3)-26,h0-2);
+$('#gt2').textContent=`step ${gn}  w=${gw.toFixed(2)}  loss=${L(gw).toFixed(2)}  gradient=${(2*(gw-3)).toFixed(2)}`}
+function gs(){gw-=+$('#lr').value*2*(gw-3);gn++;gd()}function gr(){gw=-.5;gn=0;clearInterval(gp);gd()}
+$('#g1').onclick=gs;$('#gr').onclick=gr;$('#ga').onclick=()=>{clearInterval(gp);gp=setInterval(()=>{gs();if(gn>40||Math.abs(gw)>40)clearInterval(gp)},300)};$('#lr').oninput=e=>{$('#lv').textContent=(+e.target.value).toFixed(2)};gr();
+let bi=0;setInterval(()=>{const k=[...$('#bp').children];k.forEach((e,i)=>e.classList.toggle('on',i==bi));bi=(bi+1)%4},1100);
+/* 5 rnn */
+function rw(){return $('#rt').value.trim().split(/\s+/).filter(Boolean).slice(0,7)}
+function rb(wd,hs,gs,sh){const n=wd.length,sp=96;let s=`<svg viewBox="0 0 ${n*sp+20} 190" width="${n*sp+20}">`;wd.forEach((w,i)=>{const x=50+i*sp,on=i<sh;
+if(i<n-1)s+=`<line x1="${x+24}" y1="80" x2="${x+sp-26}" y2="80" marker-end="url(#ar)" style="stroke:${i<sh-1?cs('--a'):cs('--m')};stroke-width:2"/>`;
+s+=`<circle cx="${x}" cy="80" r="24" fill="${cs('--a')}" fill-opacity="${on?.2+.8*Math.abs(hs[i]):.05}" stroke="${cs('--a')}"/><text x="${x}" y="84" text-anchor="middle" style="font-weight:700">${on?hs[i].toFixed(2):''}</text>
+<line x1="${x}" y1="140" x2="${x}" y2="106"/><text x="${x}" y="158" text-anchor="middle">${w}</text><text x="${x}" y="173" text-anchor="middle" style="fill:${cs('--m')}">x${i+1}</text><text x="${x}" y="50" text-anchor="middle" style="fill:${cs('--b')}">h${i+1}</text>`;
+if(gs&&gs[i]!==undefined){s+=`<text x="${x}" y="22" text-anchor="middle" style="fill:#ff5d8f;font-weight:700">grad ${gs[i].toFixed(2)}</text>`;if(i>0)s+=`<line x1="${x-24}" y1="96" x2="${x-sp+26}" y2="96" marker-end="url(#ar)" style="stroke:#ff5d8f;stroke-width:2"/>`}});return s+'</svg>'}
+function rh(wd){let h=0;return wd.map(w=>h=Math.tanh(1.2*Math.min(w.length/6,1.5)+.8*h))}
+function rr(){const wd=rw();$('#rs').innerHTML=rb(wd,rh(wd),null,0);$('#ro').textContent='Press a button to animate.'}
+$('#rf').onclick=()=>{const wd=rw(),hs=rh(wd);let k=0;clearInterval(window.rtm);window.rtm=setInterval(()=>{k++;$('#rs').innerHTML=rb(wd,hs,null,k);$('#ro').textContent=`t=${k}: h${k} = tanh(1.2·x${k} + 0.8·h${k-1}) = ${hs[k-1].toFixed(2)}`;if(k>=wd.length)clearInterval(window.rtm)},700)};
+$('#rb').onclick=()=>{const wd=rw(),hs=rh(wd),n=wd.length,g=[];let v=1;for(let i=n-1;i>=0;i--){g[i]=v;v*=.8*(1-(hs[i-1]||0)**2)}let k=0;clearInterval(window.rtm);window.rtm=setInterval(()=>{k++;const gg=[];for(let i=n-1;i>=n-k;i--)gg[i]=g[i];$('#rs').innerHTML=rb(wd,hs,gg,n);$('#ro').textContent=`Gradient reaching word 1: ${g[0].toFixed(3)} (started at 1.000). Old words learn very little: vanishing gradient.`;if(k>=n)clearInterval(window.rtm)},700)};$('#rt').oninput=rr;rr();
+const RT=[['One to One',[1],[1],'Plain network / image classification'],['One to Many',[1,0,0],[1,1,1],'Image captioning, music generation'],['Many to One',[1,1,1],[0,0,1],'Sentiment analysis, spam detection'],['Many to Many (same length)',[1,1,1],[1,1,1],'Part-of-speech tagging, video frame labels'],['Many to Many (encoder-decoder)',[1,1,0,0],[0,0,1,1],'Machine translation, chatbots']];
+function rt(xs,ys){const n=xs.length;let s=`<svg viewBox="0 0 ${n*44+10} 130" width="${n*44+10}">`;for(let i=0;i<n;i++){const x=28+i*44;if(i<n-1)s+=`<line x1="${x+9}" y1="65" x2="${x+35}" y2="65" marker-end="url(#ar)"/>`;s+=`<circle cx="${x}" cy="65" r="9" fill="${cs('--a')}"/>`;if(xs[i])s+=`<rect x="${x-8}" y="105" width="16" height="16" fill="${cs('--b')}"/><line x1="${x}" y1="105" x2="${x}" y2="76"/>`;if(ys[i])s+=`<rect x="${x-8}" y="8" width="16" height="16" fill="#ff5d8f"/><line x1="${x}" y1="54" x2="${x}" y2="26"/>`}return s+'</svg>'}
+let rtyDone=0;function rty(){$('#rty').innerHTML=RT.map(r=>`<div><b>${r[0]}</b><br>${rt(r[1],r[2])}<br><span class="m">${r[3]}</span></div>`).join('')}rty();
+/* 7 cnn */
+const KS=[[-1,0,1,-1,0,1,-1,0,1],[-1,-1,-1,0,0,0,1,1,1],[1,1,1,1,1,1,1,1,1].map(v=>+(v/9).toFixed(2))];let IM=Array.from({length:64},(_,i)=>{const r=i>>3,k=i&7;return r>=2&&r<=5&&k>=2&&k<=5?1:0}),cm,ct;
+function conv(){const K=KS[+$('#kf').value],F=[];for(let r=0;r<6;r++)for(let q=0;q<6;q++){let s=0;for(let a=0;a<3;a++)for(let b=0;b<3;b++)s+=IM[(r+a)*8+q+b]*K[a*3+b];F.push(Math.max(0,+s.toFixed(2)))}return F}
+function cr(sh,win){const F=conv();$('#gi').innerHTML=IM.map((v,i)=>{const r=i>>3,q=i&7,inw=win>=0&&r>=(win/6|0)&&r<(win/6|0)+3&&q>=win%6&&q<win%6+3;return `<div data-i="${i}" style="background:${v?cs('--fg'):'transparent'};outline:${inw?'2px solid #ffd23f':'none'};outline-offset:-2px;color:#888"></div>`}).join('');
+$('#gf').innerHTML=F.map((v,i)=>`<div style="cursor:default;background:${cs('--a')};opacity:${i<sh?.15+Math.min(v,3)/3.5:.08}">${i<sh?v:''}</div>`).join('');const pl=[];for(let r=0;r<3;r++)for(let q=0;q<3;q++)pl.push(Math.max(F[r*12+q*2],F[r*12+q*2+1],F[r*12+6+q*2],F[r*12+7+q*2]));
+$('#gp').innerHTML=pl.map(v=>`<div style="cursor:default;background:${cs('--b')};opacity:${sh>=36?.15+Math.min(v,3)/3.5:.08}">${sh>=36?v:''}</div>`).join('');$('#ko').textContent=sh>=36?'Bright cells = the pattern the filter looks for was found. Pooling keeps the strongest signal and shrinks the map.':'Press Slide filter.'}
+$('#gi').onclick=e=>{const i=e.target.dataset.i;if(i!==undefined){IM[i]^=1;cr(36,-1)}};$('#kf').onchange=()=>{clearInterval(ct);cr(36,-1)};
+$('#ks').onclick=()=>{clearInterval(ct);let k=0;ct=setInterval(()=>{k++;cr(k,k-1);if(k>=36){clearInterval(ct);cr(36,-1)}},110)};cr(36,-1);
+let cpi=0;setInterval(()=>{[...$('#cp').children].forEach((e,i)=>e.classList.toggle('on',i==cpi));cpi=(cpi+1)%8},800);
+/* 8 text */
+const WS={great:3,good:2,love:2,excellent:3,nice:1,amazing:3,bad:-2,worst:-3,hate:-3,boring:-2,poor:-2,terrible:-3,awful:-3,not:-1};
+function tx(){const ws=$('#tt').value.toLowerCase().match(/[a-z']+/g)||[];let s=0;$('#tc').innerHTML=ws.map(w=>{const v=WS[w]||0;s+=v;const bg=v>0?'#2ee59d':v<0?'#ff5d8f':'transparent';return `<span class="chip" style="background:${bg};color:${v?'#111':'inherit'}">${w}${v?' '+(v>0?'+':'')+v:''}</span>`}).join('');
+const wd=Math.max(-196,Math.min(196,s*30));const b=$('#tb');b.setAttribute('x',wd<0?200+wd:200);b.setAttribute('width',Math.abs(wd));b.setAttribute('fill',wd<0?'#ff5d8f':'#2ee59d');$('#to').textContent=`Total score = ${s}  →  ${s>0?'POSITIVE 😀':s<0?'NEGATIVE 😞':'NEUTRAL 😐'}`}
+$('#tt').oninput=tx;tx();
+function redraw(){n1();pd();md();gd();rr();rty();cr(36,-1)}
+</script></body></html>

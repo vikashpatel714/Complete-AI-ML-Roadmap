@@ -1,0 +1,515 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>ML Quiz Arena</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: one stage (ready / question / reveal) beside a live 6-team scoreboard; final screen = winner, podium, table, answer key. Dark arcade-night look by choice. */
+:root{
+  --bg:#0a0e1f; --panel:#131a35; --panel2:#1a2248; --line:#2b356a; --fg:#eef1ff; --muted:#9aa5d4;
+  --gold:#ffd24a; --good:#46d68c; --bad:#ff6b7a; --ink:#0a0e1f;
+  --t1:#ff6b6b; --t2:#ffb43c; --t3:#8be04e; --t4:#38d6e6; --t5:#7b93ff; --t6:#e272ff;
+  --display:"Chakra Petch","Segoe UI",system-ui,sans-serif; --body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5;
+  padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  background-image:radial-gradient(1200px 500px at 15% -10%,#1a2a6c55,transparent),radial-gradient(900px 500px at 100% 0,#5b1e7c40,transparent);background-repeat:no-repeat}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;line-height:1.15}
+.wrap{max-width:1180px;margin:0 auto}
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.brand{font-family:var(--display);font-weight:700;font-size:1.25rem;letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;gap:10px;margin-right:auto}
+.brand i{width:14px;height:14px;background:var(--gold);transform:rotate(45deg);display:inline-block}
+.pill{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:6px 14px;font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.pill b{color:var(--fg);font-weight:600}
+.btn{border:1px solid var(--line);background:var(--panel2);border-radius:10px;padding:10px 18px;font-weight:600;transition:transform .1s,background .15s}
+.btn:hover{background:#243064}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--gold);color:var(--ink);border-color:var(--gold);font-family:var(--display);font-size:1.1rem;letter-spacing:.04em;padding:14px 28px}
+.btn.primary:hover{background:#ffe07a}
+.btn.primary:disabled{opacity:.4;cursor:not-allowed}
+.btn.small{padding:6px 12px;font-size:.85rem}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:20px;align-items:start}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px;min-width:0}
+.eyebrow{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
+/* setup */
+.hero{padding:8px 0 20px}
+.hero h1{font-size:clamp(2rem,6vw,3.4rem);letter-spacing:.01em}
+.hero p{color:var(--muted);max-width:60ch;margin:10px 0 0}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:18px 0 22px}
+.rule{background:var(--panel2);border-radius:12px;padding:14px}
+.rule b{display:block;font-family:var(--display);font-size:1.6rem;color:var(--gold)}
+.rule span{font-size:.85rem;color:var(--muted)}
+.teams{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.teamin{display:flex;align-items:center;gap:10px;background:var(--panel2);border-radius:12px;padding:8px 10px;border:1px solid var(--line)}
+.teamin .dot{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-family:var(--display);font-weight:700;color:var(--ink);flex:none}
+.teamin input{flex:1;min-width:0;background:transparent;border:0;color:var(--fg);font:inherit;font-weight:600;padding:6px 4px}
+.opts{display:flex;flex-wrap:wrap;gap:18px;margin:20px 0}
+.opts label{display:flex;align-items:center;gap:8px;font-size:.92rem;color:var(--muted)}
+.opts select{background:var(--panel2);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:6px 8px;font:inherit}
+.opts input[type=checkbox]{width:18px;height:18px;accent-color:var(--gold)}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+/* stage */
+.stagehead{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+.teamtag{display:inline-flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:1.15rem;padding:6px 16px 6px 6px;border-radius:999px;background:var(--panel2);border:1px solid var(--line)}
+.teamtag .dot{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;color:var(--ink);font-size:.95rem}
+.modtag{color:var(--muted);font-size:.85rem}
+.timer{margin-left:auto;position:relative;width:92px;height:92px;flex:none}
+.timer svg{width:92px;height:92px;transform:rotate(-90deg)}
+.timer .bgc{stroke:var(--line);fill:none;stroke-width:8}
+.timer .fg{fill:none;stroke-width:8;stroke-linecap:round;transition:stroke .3s}
+.timer .num{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:1.9rem;font-variant-numeric:tabular-nums}
+.timer.low .num{color:var(--bad);animation:pulse 1s infinite}
+@keyframes pulse{50%{transform:scale(1.12)}}
+.qtext{font-family:var(--display);font-weight:600;font-size:clamp(1.25rem,2.6vw,1.8rem);line-height:1.3;margin:6px 0 22px;text-wrap:pretty}
+.options{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px}
+.opt{display:flex;gap:14px;align-items:center;text-align:left;background:var(--panel2);border:2px solid var(--line);border-radius:12px;padding:14px 16px;min-width:0;font-size:1.02rem;transition:border-color .15s,background .15s}
+.opt .k{flex:none;width:34px;height:34px;border-radius:8px;display:grid;place-items:center;background:var(--bg);font-family:var(--display);font-weight:700;color:var(--muted)}
+.opt:hover:not(:disabled){border-color:var(--gold)}
+.opt.sel{border-color:var(--gold);background:#2b2a4f}
+.opt.sel .k{background:var(--gold);color:var(--ink)}
+.opt.right{border-color:var(--good);background:#10372f}
+.opt.right .k{background:var(--good);color:var(--ink)}
+.opt.wrong{border-color:var(--bad);background:#3d1b2c}
+.opt.wrong .k{background:var(--bad);color:var(--ink)}
+.opt:disabled{cursor:default;color:inherit}
+.opt.dim{opacity:.55}
+.actions{display:flex;gap:12px;margin-top:22px;flex-wrap:wrap;align-items:center}
+.hint{color:var(--muted);font-size:.85rem}
+.verdict{display:flex;align-items:center;gap:14px;flex-wrap:wrap;border-radius:12px;padding:14px 18px;margin-bottom:18px;font-family:var(--display);font-size:1.4rem;font-weight:700}
+.verdict.ok{background:#10372f;color:var(--good)} .verdict.no{background:#3d1b2c;color:var(--bad)} .verdict.to{background:#3a3217;color:var(--gold)}
+.verdict .pts{margin-left:auto;font-size:1.8rem;font-variant-numeric:tabular-nums}
+.explain{background:var(--panel2);border-radius:12px;padding:14px 16px;margin-top:18px;color:#d6dcf7}
+.explain b{color:var(--gold)}
+.ready{text-align:center;padding:28px 8px 12px}
+.ready .big{font-family:var(--display);font-weight:700;font-size:clamp(2.2rem,7vw,4.2rem);margin:8px 0 6px;overflow-wrap:anywhere}
+.ready p{color:var(--muted);margin:4px 0 24px}
+.paused{text-align:center;padding:40px 10px;color:var(--muted)}
+.paused h3{color:var(--fg);font-size:2rem;margin-bottom:10px}
+/* scoreboard */
+.board{position:sticky;top:12px}
+.board h3{font-size:1rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;color:var(--muted)}
+.brow{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
+.brow:first-of-type{border-top:0}
+.brow .dot{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font-family:var(--display);font-weight:700;color:var(--ink);font-size:.85rem}
+.brow .nm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brow .sub{font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.brow .sc{font-family:var(--display);font-weight:700;font-size:1.3rem;font-variant-numeric:tabular-nums}
+.brow .bar{grid-column:2/4;height:4px;background:var(--bg);border-radius:4px;overflow:hidden}
+.brow .bar i{display:block;height:100%;border-radius:4px;transition:width .5s}
+.brow.now{background:#ffffff0d;margin:0 -10px;padding-inline:10px;border-radius:10px}
+.prog{height:6px;background:var(--bg);border-radius:6px;overflow:hidden;margin-top:14px}
+.prog i{display:block;height:100%;background:var(--gold);transition:width .4s}
+/* final */
+.winner{text-align:center;padding:30px 12px 10px;position:relative}
+.winner .crown{font-family:var(--display);letter-spacing:.3em;text-transform:uppercase;color:var(--gold);font-weight:700}
+.winner h1{font-size:clamp(2.4rem,9vw,5.5rem);margin:8px 0;overflow-wrap:anywhere}
+.winner .total{font-family:var(--display);font-size:1.6rem;color:var(--muted)}
+.winner .total b{color:var(--gold);font-size:2.4rem}
+.podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:end;max-width:620px;margin:26px auto 0}
+.pod{border-radius:12px 12px 0 0;padding:14px 8px;text-align:center;color:var(--ink)}
+.pod .pn{font-family:var(--display);font-weight:700;font-size:1.05rem;overflow-wrap:anywhere}
+.pod .ps{font-family:var(--display);font-size:1.7rem;font-weight:700}
+.pod .pr{font-size:.8rem;font-weight:600;opacity:.8}
+.tablewrap{overflow-x:auto;margin-top:12px}
+table{border-collapse:collapse;width:100%;min-width:640px;font-variant-numeric:tabular-nums}
+th,td{padding:10px 12px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+td.l,th.l{text-align:left}
+td .dot{display:inline-grid;width:24px;height:24px;border-radius:7px;place-items:center;color:var(--ink);font-family:var(--display);font-weight:700;font-size:.8rem;margin-right:8px;vertical-align:middle}
+tr.first td{background:#ffd24a14;font-weight:600}
+.sec{margin-top:22px}
+.sec h2{font-size:1.4rem;margin-bottom:4px}
+.sec .sub{color:var(--muted);font-size:.9rem;margin-bottom:10px}
+.hbar{display:grid;grid-template-columns:110px minmax(0,1fr) 56px;gap:10px;align-items:center;margin:8px 0}
+.hbar .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.hbar .tr{height:18px;background:var(--bg);border-radius:6px;overflow:hidden}
+.hbar .tr i{display:block;height:100%;border-radius:6px}
+.hbar .v{text-align:right;font-family:var(--display);font-weight:700;font-variant-numeric:tabular-nums}
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 14px}
+.filters select{background:var(--panel2);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit}
+.key{display:flex;flex-direction:column;gap:10px}
+.ans{background:var(--panel2);border-radius:12px;padding:14px 16px;border-left:5px solid var(--line);min-width:0}
+.ans.ok{border-left-color:var(--good)} .ans.no{border-left-color:var(--bad)} .ans.to{border-left-color:var(--gold)}
+.ans .meta{display:flex;gap:10px;flex-wrap:wrap;font-size:.78rem;color:var(--muted);margin-bottom:6px;align-items:center}
+.ans .meta .tg{padding:2px 10px;border-radius:999px;color:var(--ink);font-weight:700}
+.ans .q{font-weight:600;margin-bottom:6px}
+.ans .a{font-size:.92rem}
+.ans .a b{color:var(--good)}
+.ans .y{font-size:.92rem;color:var(--muted)}
+.ans .e{font-size:.88rem;color:#c3cbee;margin-top:6px}
+#confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--gold);color:var(--ink);padding:10px 18px;border-radius:10px;font-weight:600;z-index:60}
+@media (max-width:900px){.layout{grid-template-columns:minmax(0,1fr)}.board{position:static}.card{padding:18px}.timer,.timer svg{width:74px;height:74px}.timer .num{font-size:1.5rem}}
+@media (max-width:480px){.hbar{grid-template-columns:80px minmax(0,1fr) 48px}.opt{padding:12px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap" id="app"></div>
+<canvas id="confetti" hidden></canvas>
+
+<script>
+/* ============ QUESTION BANK: [question, CORRECT, wrong1, wrong2, wrong3, explanation] — 5 modules x 24 ============ */
+const MODS=["Introduction to ML","Classification","Regression","Probabilistic & Clustering","Neural Networks"];
+const BANK=[
+/* ---- Module 1: Introduction to Machine Learning ---- */[
+["Which type of learning trains on labelled input–output pairs?","Supervised learning","Unsupervised learning","Reinforcement learning","Association learning","Supervised learning learns a mapping from inputs to known labels."],
+["Grouping customers by buying behaviour without any labels is an example of:","Unsupervised learning","Supervised classification","Reinforcement learning","Regression","No labels are given, so the algorithm finds structure on its own (clustering)."],
+["An agent that learns from rewards and penalties given by its environment follows:","Reinforcement learning","Supervised learning","Unsupervised learning","Semi-supervised learning","Reinforcement learning maximises cumulative reward through trial and error."],
+["A small labelled set together with a large unlabelled set is used in:","Semi-supervised learning","Purely supervised learning","Purely unsupervised learning","Rule-based programming","Semi-supervised learning mixes a few labels with many unlabelled samples."],
+["In Mitchell's definition of a well-defined learning problem, the three components are:","Task (T), Performance measure (P), Experience (E)","Training, Testing, Validation","Input, Output, Error","Data, Model, Algorithm","A program learns from experience E for task T if its performance P on T improves with E."],
+["Which is a design choice while designing a learning system?","Choosing the target function and its representation","Choosing the colour theme of a dashboard","Choosing the size of the hard disk","Choosing the font of the report","Designing a learning system involves training experience, target function, representation and learning algorithm."],
+["Which statement about Data Science and Machine Learning is correct?","ML is a toolkit used inside data science to learn patterns from data","Data science is a small subset of ML","They are exactly the same thing","ML never needs data","Data science is broader (collection, cleaning, analysis, communication); ML is one of its core tools."],
+["Arthur Samuel popularised the term 'machine learning' in 1959 through his work on:","A checkers-playing program","A chess world champion program","A speech recogniser","A self-driving car","Samuel's checkers program improved by playing against itself."],
+["A column 'City' with values Delhi, Mumbai, Pune is which type of feature?","Nominal categorical","Ordinal categorical","Continuous numeric","Binary","City names are categories with no natural order, so they are nominal."],
+["Mean imputation handles missing values by:","Replacing them with the mean of the available values of that column","Deleting the entire dataset","Replacing them with zero always","Replacing them with the maximum value","The column mean is a simple central estimate for numeric features."],
+["One-hot encoding a feature with 3 categories (Red, Green, Blue) creates:","3 binary columns","1 column with values 1, 2, 3","2 decimal columns","9 columns","Each category gets its own 0/1 column."],
+["Min–Max scaling to [0,1]: x = 30, min = 10, max = 50. Scaled value is:","0.5","0.4","0.6","0.3","(30 − 10) / (50 − 10) = 20/40 = 0.5."],
+["Standardization: x = 70, mean = 50, standard deviation = 10. The z-score is:","2","20","0.2","7","z = (x − μ)/σ = (70 − 50)/10 = 2."],
+["Why is plain label encoding risky for nominal features?","It imposes an artificial order on the categories","It deletes rows","It creates too many columns","It converts numbers to text","Values like 0,1,2 make a model think one city is 'greater' than another."],
+["Q1 = 10 and Q3 = 30. By the IQR rule the upper outlier fence is:","60","45","40","90","IQR = 20; upper fence = Q3 + 1.5 × IQR = 30 + 30 = 60."],
+["In z-score outlier detection, a point is commonly flagged when |z| is greater than:","3","0.5","1","10","Beyond 3 standard deviations from the mean is the usual rule of thumb."],
+["Filter methods of feature selection rank features using:","Statistical measures, independent of any model","Repeated retraining of the final model","Random choice","The number of rows","Filter methods use measures such as correlation or chi-square before modelling."],
+["Very low training error but very high test error indicates:","Overfitting","Underfitting","A perfect model","High bias only","The model memorised training data and fails to generalise."],
+["High error on both training and test data indicates:","Underfitting","Overfitting","A good fit","Low bias","The model is too simple to capture the pattern."],
+["A high-bias model is typically:","Too simple and underfits","Too complex and overfits","Always perfect","Random","High bias means strong, wrong simplifying assumptions."],
+["A high-variance model:","Is very sensitive to the training data and overfits","Ignores the training data","Always underfits","Has zero error","Small changes in training data change its predictions a lot."],
+["The ReLU activation function is defined as:","f(x) = max(0, x)","f(x) = 1 / (1 + e^−x)","f(x) = tanh(x)","f(x) = x²","ReLU outputs 0 for negative inputs and x otherwise."],
+["The output range of the sigmoid function is:","(0, 1)","(−1, 1)","(0, ∞)","(−∞, ∞)","Sigmoid squashes any input into the open interval between 0 and 1."],
+["Sensitivity analysis in model building studies:","How changes in inputs or parameters affect the model output","How fast the computer is","The price of the dataset","The colour of the plots","It shows which inputs or hyper-parameters the output depends on most."]
+],
+/* ---- Module 2: Classification ---- */[
+["Classifying an email as 'spam' or 'not spam' is:","Binary classification","Multiclass classification","Regression","Clustering","Two possible classes means binary classification."],
+["Recognising handwritten digits 0–9 is a:","Multiclass classification","Binary classification","Regression problem","Clustering problem","There are 10 classes."],
+["A decision boundary is:","A surface in feature space that separates the predicted classes","The time limit of training","The training error","The size of the dataset","Points on one side are predicted as one class, the other side as another."],
+["Confusion matrix: TP = 40, FP = 10, FN = 5, TN = 45. Accuracy is:","85%","80%","88.9%","90%","(TP + TN) / total = 85 / 100 = 85%."],
+["Same matrix (TP = 40, FP = 10, FN = 5, TN = 45). Precision is:","80%","85%","88.9%","55%","Precision = TP / (TP + FP) = 40 / 50 = 80%."],
+["Same matrix (TP = 40, FP = 10, FN = 5, TN = 45). Recall is:","88.9%","80%","85%","55%","Recall = TP / (TP + FN) = 40 / 45 ≈ 88.9%."],
+["In cancer screening, where missing a sick patient is very costly, which metric matters most?","Recall (sensitivity)","Precision","Training time","Number of features","High recall means few false negatives."],
+["The F1-score is the:","Harmonic mean of precision and recall","Arithmetic mean of accuracy and recall","Product of TP and TN","Difference of precision and recall","F1 = 2PR / (P + R)."],
+["Precision = 0.5 and Recall = 1.0. F1-score is:","0.667","0.75","0.5","1.0","F1 = 2 × 0.5 × 1.0 / 1.5 = 0.667."],
+["The ROC curve plots:","True Positive Rate vs False Positive Rate","Precision vs Recall","Accuracy vs epochs","Bias vs variance","Each point is a classification threshold."],
+["An AUC of 0.5 means the classifier is:","No better than random guessing","Perfect","Always wrong","Needs more data","0.5 corresponds to the diagonal line in ROC space."],
+["A dataset has 99% negative samples. A model that always predicts 'negative' gets 99% accuracy. Why is that misleading?","Class imbalance: it never detects any positive case","Because accuracy cannot exceed 90%","Because precision equals 1","Because the model is overfitted","Accuracy hides zero recall on the minority class."],
+["The entropy of a pure node (all samples from one class) is:","0","1","0.5","Infinity","No uncertainty means zero entropy."],
+["The entropy of a binary node with a 50:50 class split is:","1","0","0.5","2","−0.5·log₂0.5 − 0.5·log₂0.5 = 1 bit."],
+["Information Gain of a split equals:","Entropy(parent) − weighted average entropy of children","Entropy(child) + Entropy(parent)","Gini(parent) × 2","Number of leaves","A good split reduces entropy the most."],
+["Gini index of a node with class proportions 0.8 and 0.2 is:","0.32","0.68","0.5","0.8","1 − (0.8² + 0.2²) = 1 − 0.68 = 0.32."],
+["Which decision-tree algorithm uses the Gini index and makes binary splits?","CART","ID3","C4.5","K-Means","CART = Classification And Regression Trees."],
+["ID3 selects the splitting attribute using:","Highest information gain","Lowest Gini index","Largest distance","Random choice","ID3 is built on entropy and information gain."],
+["The main purpose of pruning a decision tree is to:","Reduce overfitting","Increase the depth","Add more features","Speed up data entry","Removing weak branches improves generalisation."],
+["Support vectors in an SVM are:","The training points closest to the hyperplane that define the margin","All training points","The cluster centroids","Outliers removed from data","Only these points determine the optimal hyperplane."],
+["The kernel trick in SVM:","Computes similarity in a higher-dimensional space without explicitly mapping the data","Deletes the support vectors","Reduces the data to one dimension","Converts labels to numbers","It makes non-linear boundaries possible efficiently."],
+["A soft-margin SVM:","Allows some misclassifications or margin violations","Never allows any error","Works only with clustering","Has no hyperplane","The C parameter trades margin width against errors."],
+["K-Nearest Neighbor is called a lazy learner because:","It stores the data and computes only at prediction time","It trains extremely slowly","It ignores the data","It uses no distance","There is no explicit training phase."],
+["KNN with K = 3: the labels of the 3 nearest neighbours are A, B, A. Predicted class is:","A","B","Tie","Cannot be decided","Majority vote: A has 2 votes, B has 1."]
+],
+/* ---- Module 3: Regression ---- */[
+["Regression predicts:","A continuous numeric value","A class label","A cluster id","A rule set","Examples: house price, temperature, salary."],
+["Despite its name, logistic regression is mainly used for:","Binary classification","Predicting house prices","Clustering","Image generation","It outputs a probability that is thresholded into a class."],
+["Multiple linear regression uses:","More than one independent variable","Only one independent variable","No independent variable","Only categorical labels","y = b0 + b1x1 + b2x2 + …"],
+["Polynomial regression fits a curved relationship by adding:","Powers of the input feature (x², x³, …)","More rows","Class labels","Cluster centres","The model is still linear in its coefficients."],
+["Simple linear regression y = 2x + 3. Prediction for x = 4 is:","11","8","14","24","2 × 4 + 3 = 11."],
+["Actual values [3, 5], predicted [2, 7]. MSE is:","2.5","1.5","5","3","Errors −1 and 2; squares 1 and 4; mean = 2.5."],
+["If MSE = 16 then RMSE is:","4","8","256","16","RMSE = √MSE = 4."],
+["Actual [10, 20, 30], predicted [12, 18, 33]. MAE is:","2.33","7","3","1.5","(2 + 2 + 3) / 3 ≈ 2.33."],
+["Which error metric penalises large errors more heavily?","MSE","MAE","Both equally","Neither","Squaring makes big errors count much more."],
+["The linear regression cost function is J(θ) =","(1/2m) Σ (hθ(x) − y)²","Σ (hθ(x) − y)","(1/m) Σ y","max(hθ(x), y)","Half the mean squared error; the ½ cancels when differentiating."],
+["The gradient descent update rule is:","θ := θ − α · ∂J/∂θ","θ := θ + α · J","θ := α / θ","θ := J(θ)","Move opposite to the gradient to reduce cost."],
+["If the learning rate α is too large, gradient descent may:","Overshoot the minimum and diverge","Converge very slowly","Always find the global minimum faster","Stop updating","Steps jump across the valley."],
+["If the learning rate α is too small:","Convergence becomes very slow","The cost increases","The model diverges","The model overfits instantly","Tiny steps need many iterations."],
+["The MSE cost for linear regression is convex, so gradient descent reaches:","The single global minimum","Many local minima","Never converges","A maximum","A bowl-shaped surface has just one minimum."],
+["Batch gradient descent computes each update using:","All training examples","One random example","Only the last example","No data","Stochastic GD uses one example; mini-batch uses a few."],
+["θ = 2, α = 0.1, gradient = 5. New θ is:","1.5","2.5","0.5","1.0","2 − 0.1 × 5 = 1.5."],
+["A very high-degree polynomial fitted on a few points will most likely:","Overfit","Underfit","Have high bias","Have zero variance","It passes through the points but fails on new data."],
+["Regularization helps by:","Penalising large weights to reduce overfitting","Adding more features","Removing the training data","Increasing learning rate","L1/L2 penalty terms keep the model simple."],
+["The output of logistic regression is:","A probability between 0 and 1","Any real number","A cluster id","A tree","It passes the linear score through a sigmoid."],
+["sigmoid(0) equals:","0.5","0","1","−1","1 / (1 + e⁰) = 0.5."],
+["Logistic regression uses log-loss (cross-entropy) instead of MSE because:","MSE with a sigmoid gives a non-convex cost","MSE is undefined","Log-loss is quicker to write","MSE works only for classification","Log-loss keeps the cost convex."],
+["In regularised regression, which parameter is usually NOT penalised?","The bias term θ₀","θ₁","All parameters","The largest weight","By convention only θ₁…θₙ are regularised."],
+["One-vs-All for a problem with K classes trains:","K binary classifiers","1 binary classifier","K² classifiers","No classifier","Each classifier separates one class from the rest."],
+["Low training error but high validation error in a regression model suggests:","High variance (overfitting)","High bias","Underfitting","A perfect fit","The model has memorised noise in the training set."]
+],
+/* ---- Module 4: Probabilistic & Clustering ---- */[
+["Bayes' theorem states:","P(A|B) = P(B|A)·P(A) / P(B)","P(A|B) = P(A)·P(B)","P(A|B) = P(B|A) / P(A)","P(A|B) = P(A) + P(B)","It reverses a conditional probability."],
+["P(A) = 0.3, P(B|A) = 0.8, P(B) = 0.6. Then P(A|B) is:","0.4","0.24","0.8","0.5","0.8 × 0.3 / 0.6 = 0.4."],
+["Naive Bayes assumes that features are:","Conditionally independent given the class","Always identical","Perfectly correlated","Continuous only","This 'naive' assumption simplifies the likelihood to a product."],
+["The zero-frequency problem in Naive Bayes is solved by:","Laplace smoothing","Pruning","Bagging","Normalisation","Add 1 to every count so no probability is zero."],
+["P(Yes) = 0.6, P(x|Yes) = 0.5; P(No) = 0.4, P(x|No) = 0.2. Naive Bayes predicts:","Yes","No","Tie","Cannot decide","0.6 × 0.5 = 0.30 vs 0.4 × 0.2 = 0.08."],
+["A Bayesian belief network is:","A directed acyclic graph with conditional probability tables","A cluster dendrogram","A neural network","A decision tree","Nodes are variables, edges show dependencies."],
+["Bagging trains each model on:","A bootstrap sample (sampling with replacement)","The same data every time","Only the errors of the previous model","Only one feature","Models are trained in parallel on resampled data."],
+["Boosting builds models:","Sequentially, each focusing on the previous errors","In parallel independently","Without data","Only on outliers","Later learners fix earlier mistakes."],
+["Random Forest is:","Bagging of decision trees with a random feature subset at each split","A single deep tree","Boosting of SVMs","A clustering method","Randomness decorrelates the trees."],
+["Bagging mainly reduces:","Variance","Bias only","Dataset size","Feature count","Averaging many models smooths out variance."],
+["AdaBoost improves performance by:","Increasing the weights of misclassified samples","Deleting misclassified samples","Averaging all trees equally","Using K-Means","Next learner pays more attention to hard samples."],
+["Gradient Boosting fits each new tree to:","The residual errors (negative gradient) of the current model","The original labels again","Random noise","The cluster centres","Each tree corrects what the ensemble still gets wrong."],
+["XGBoost is best described as:","A regularised, optimised implementation of gradient boosting","Bagging of KNN models","A clustering algorithm","A neural network","It adds regularisation and fast tree construction."],
+["About what fraction of the data is left out of a bootstrap sample?","≈ 37% (about one third)","0%","50%","90%","These out-of-bag samples can be used for validation."],
+["K-Means tries to minimise:","The within-cluster sum of squared distances","The number of features","The accuracy","The learning rate","Points should be close to their own centroid."],
+["The elbow method is used to choose:","The number of clusters K","The learning rate","The tree depth","The kernel","Plot cost vs K and pick the bend."],
+["A K-Means cluster contains points 2, 4 and 6. Its centroid is:","4","2","6","12","(2 + 4 + 6) / 3 = 4."],
+["K-Medoids differs from K-Means because its cluster centre is:","An actual data point, making it robust to outliers","The mean of the points","A random number","Always zero","Medoids must be real observations."],
+["K-Modes is used for clustering:","Categorical data","Images only","Time series only","Continuous data only","It uses modes and a matching dissimilarity."],
+["The tree diagram that shows hierarchical clustering merges is called a:","Dendrogram","Confusion matrix","ROC curve","Perceptron","Cutting the dendrogram gives the clusters."],
+["Single linkage defines the distance between two clusters as:","The minimum distance between any pair of points","The maximum distance between any pair of points","The distance between centroids","The sum of all distances","Complete linkage uses the maximum."],
+["AGNES is a hierarchical method that works:","Bottom-up (agglomerative)","Top-down (divisive)","Randomly","Only on labelled data","DIANA is the top-down counterpart."],
+["In reinforcement learning the agent receives what after each action?","A reward (or penalty)","A label","A cluster id","A dendrogram","The reward signal guides learning."],
+["Manhattan distance between (1, 2) and (4, 6) is:","7","5","25","10","|1 − 4| + |2 − 6| = 3 + 4 = 7 (Euclidean would be 5)."]
+],
+/* ---- Module 5: Artificial Neural Networks ---- */[
+["A perceptron is:","A single-layer linear binary classifier","A clustering algorithm","A decision tree","A regression tree","It computes a weighted sum and applies a step function."],
+["Perceptron with w = [2, −1], x = [3, 4], b = 1. The weighted sum z is:","3","6","11","−3","2·3 + (−1)·4 + 1 = 3."],
+["A single perceptron cannot learn XOR because XOR is:","Not linearly separable","Too large","Multiclass","Unlabelled","No single straight line separates XOR classes."],
+["A multilayer perceptron differs from a perceptron by having:","One or more hidden layers","Only an input layer","No weights","No activation function","Hidden layers allow non-linear decision boundaries."],
+["In a feed-forward network information flows:","In one direction, from input to output","In loops through time","Backwards only","Randomly","There are no cycles."],
+["Back-propagation computes gradients using:","The chain rule of calculus","Bayes theorem","K-Means","Pruning","Errors are propagated backward layer by layer."],
+["After back-propagation gives the gradients, the weights are updated using:","Gradient descent (or a variant)","K-Means","Laplace smoothing","Pruning","w := w − α · gradient."],
+["A typical CNN application in healthcare is:","Detecting tumours in X-ray or MRI images","Sorting patient names alphabetically","Printing bills","Scheduling meetings","CNNs excel at medical image analysis."],
+["The vanishing-gradient problem is most associated with deep networks using:","Sigmoid or tanh activations","ReLU activations","No hidden layers","Dropout","Their derivatives are small, so gradients shrink layer by layer."],
+["ReLU(−3) equals:","0","−3","3","1","ReLU outputs max(0, x)."],
+["The softmax function outputs:","Class probabilities that sum to 1","A single binary value","Negative numbers only","Cluster centres","It is used in the output layer for multiclass problems."],
+["Recurrent Neural Networks are designed for:","Sequential data such as text or time series","Only static tables","Only images","Only clustering","They carry information from one step to the next."],
+["BPTT (Back-Propagation Through Time) means:","Back-propagation on the RNN unrolled across time steps","Training a CNN backwards","Pruning a tree","A boosting method","Gradients flow through every time step."],
+["The hidden state of an RNN acts as:","Memory of the earlier inputs","The label","A dataset","The learning rate","It summarises what the network has seen so far."],
+["LSTM networks reduce the vanishing-gradient problem by using:","Gates that control information flow","A bigger dataset","K-Means","Bagging","Input, forget and output gates keep long-term information."],
+["Classifying the sentiment of a whole sentence is an example of which RNN type?","Many-to-one","One-to-many","One-to-one only","Many-to-many only","Many words go in, one label comes out."],
+["Before text goes into a neural network it is usually converted into:","Numeric vectors (embeddings)","Images","Cluster labels","Gradients","Networks work with numbers, not raw words."],
+["CNNs are mainly used for:","Image data","Only tabular rows","Only audio text","Only clustering","Convolutions exploit spatial structure."],
+["A convolution filter (kernel) is used to:","Detect local features such as edges","Store labels","Choose K","Prune trees","Filters slide over the image producing feature maps."],
+["Max pooling:","Keeps the maximum value in each window, reducing size","Adds noise","Adds more filters","Increases the image size","It down-samples and gives some translation invariance."],
+["A 5×5 input, 3×3 filter, stride 1, no padding gives an output of size:","3 × 3","5 × 5","4 × 4","2 × 2","(5 − 3)/1 + 1 = 3."],
+["One epoch in neural-network training is:","One full pass over the whole training set","One single weight update","One hidden layer","One neuron","Many epochs are usually needed."],
+["Which of these is a hyper-parameter?","Learning rate","The learned weights","The learned bias","Gradient values","Hyper-parameters are set before training."],
+["Dropout helps a neural network by:","Randomly switching off neurons during training to reduce overfitting","Adding more layers","Increasing the learning rate","Removing the labels","It stops neurons from co-adapting."]
+]];
+
+/* ============ CONFIG / STATE ============ */
+const COLORS=["var(--t1)","var(--t2)","var(--t3)","var(--t4)","var(--t5)","var(--t6)"];
+const SAVE_KEY="ml-quiz-arena-v1";
+let cfg={names:["Team 1","Team 2","Team 3","Team 4","Team 5","Team 6"],secs:60,rounds:20,bonus:true,neg:false,sound:true};
+let st={phase:"setup",turn:0,results:[],sel:-1,deadline:0,remain:0,paused:false,timer:null,lastSec:-1,endArm:false};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const TEAMS=6;
+const totalTurns=()=>cfg.rounds*TEAMS;
+
+/* ---- sound ---- */
+let ac;
+function beep(f,d,type,v){ if(!cfg.sound)return; try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.type=type||"sine";o.frequency.value=f;g.gain.value=v||.06;o.connect(g);g.connect(ac.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d);o.stop(ac.currentTime+d);}catch(e){} }
+const sndOk=()=>{beep(660,.15);setTimeout(()=>beep(880,.25),130)};
+const sndNo=()=>{beep(200,.35,"sawtooth",.05)};
+const sndTick=()=>beep(900,.06,"square",.03);
+const sndStart=()=>{beep(440,.1);setTimeout(()=>beep(660,.18),110)};
+
+/* ---- question helpers ---- */
+function rng(seed){let a=seed>>>0;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function qFor(turn){
+  const team=turn%TEAMS, round=Math.floor(turn/TEAMS), k=cfg.rounds/5;
+  const mod=Math.floor(round/k), idx=(round%k)*TEAMS+team, q=BANK[mod][idx];
+  const r=rng((mod*24+idx)*7919+13), perm=[0,1,2,3];
+  for(let i=3;i>0;i--){const j=Math.floor(r()*(i+1));[perm[i],perm[j]]=[perm[j],perm[i]]}
+  return {team,round,mod,idx,q:q[0],opts:q.slice(1,5),expl:q[5],perm};
+}
+const LET=["A","B","C","D"];
+
+/* ---- scoring ---- */
+function totals(){
+  const t=[...Array(TEAMS)].map((_,i)=>({i,pts:0,ok:0,no:0,to:0,bonus:0,used:0,played:0,mod:[0,0,0,0,0]}));
+  st.results.forEach(r=>{const x=t[r.team];x.pts+=r.pts;x.bonus+=r.bonus;x.used+=r.used;x.played++;
+    if(r.status==="correct"){x.ok++;x.mod[r.mod]++}else if(r.status==="wrong")x.no++;else x.to++;});
+  return t;
+}
+const rank=()=>totals().sort((a,b)=>b.pts-a.pts||b.ok-a.ok||a.used-b.used);
+
+/* ---- persistence (optional convenience) ---- */
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify({cfg,turn:st.turn,results:st.results}))}catch(e){}}
+function loadSaved(){try{const s=JSON.parse(localStorage.getItem(SAVE_KEY)||"null");return s&&s.results&&s.results.length<s.cfg.rounds*TEAMS?s:null}catch(e){return null}}
+function clearSaved(){try{localStorage.removeItem(SAVE_KEY)}catch(e){}}
+
+/* ============ RENDER ============ */
+function dot(i){return `<span class="dot" style="background:${COLORS[i]}">${i+1}</span>`}
+function header(){
+  const n=totalTurns();
+  return `<div class="top"><div class="brand"><i></i>ML Quiz Arena</div>
+  ${st.phase==="setup"?"":`<span class="pill">Round <b>${Math.min(Math.floor(st.turn/TEAMS)+1,cfg.rounds)}</b> / ${cfg.rounds}</span><span class="pill">Turn <b>${Math.min(st.turn+1,n)}</b> / ${n}</span>
+  <button class="btn small" id="snd">Sound: ${cfg.sound?"On":"Off"}</button>
+  ${st.phase!=="final"?`<button class="btn small" id="endg">${st.endArm?"Tap again to end game":"End game"}</button>`:""}`}</div>`;
+}
+function boardHTML(activeTeam){
+  const r=totals(), max=Math.max(1,...r.map(x=>x.pts)), sorted=[...r].sort((a,b)=>b.pts-a.pts||b.ok-a.ok||a.used-b.used);
+  const done=st.results.length, n=totalTurns();
+  return `<h3>Live scoreboard</h3>`+sorted.map(x=>`<div class="brow ${x.i===activeTeam?"now":""}">${dot(x.i)}<div style="min-width:0"><div class="nm">${esc(cfg.names[x.i])}</div><div class="sub">${x.ok} correct · ${x.played}/${cfg.rounds} played</div></div><div class="sc">${x.pts}</div><div class="bar"><i style="width:${Math.max(0,x.pts)/max*100}%;background:${COLORS[x.i]}"></i></div></div>`).join("")+`<div class="prog"><i style="width:${done/n*100}%"></i></div><div class="hint" style="margin-top:6px">${done} of ${n} questions answered</div>`;
+}
+function app(html){ $("#app").innerHTML=html; bind(); }
+
+function render(){
+  if(st.phase==="setup")return renderSetup();
+  if(st.phase==="final")return renderFinal();
+  const Q=qFor(st.turn), t=Q.team;
+  let stage="";
+  if(st.phase==="ready"){
+    stage=`<div class="ready"><div class="eyebrow">Round ${Q.round+1} of ${cfg.rounds} · ${esc(MODS[Q.mod])}</div>
+      <div class="big" style="color:${COLORS[t]}">${esc(cfg.names[t])}</div>
+      <p>You are up. You get ${cfg.secs} seconds for this question. Press Start when the team is ready.</p>
+      <button class="btn primary" id="start">Start ${cfg.secs}s timer</button><div class="hint" style="margin-top:12px">Shortcut: Space</div></div>`;
+  } else {
+    const reveal=st.phase==="reveal", res=reveal?st.results[st.results.length-1]:null;
+    const optHTML=Q.perm.map((o,j)=>{
+      let c="opt";
+      if(reveal){ if(o===0)c+=" right"; else if(res.selDisp===j)c+=" wrong"; else c+=" dim"; }
+      else if(st.sel===j)c+=" sel";
+      return `<button class="${c}" data-j="${j}" ${reveal||st.paused?"disabled":""}><span class="k">${LET[j]}</span><span>${esc(Q.opts[o])}</span></button>`;
+    }).join("");
+    const head=`<div class="stagehead"><span class="teamtag">${dot(t)}${esc(cfg.names[t])}</span><span class="modtag">Round ${Q.round+1} · ${esc(MODS[Q.mod])}</span>
+      ${reveal?"":`<div class="timer" id="timer"><svg viewBox="0 0 100 100"><circle class="bgc" cx="50" cy="50" r="44"/><circle class="fg" id="ring" cx="50" cy="50" r="44" stroke="${COLORS[t]}" stroke-dasharray="276.46" stroke-dashoffset="0"/></svg><div class="num" id="tnum">${cfg.secs}</div></div>`}</div>`;
+    if(reveal){
+      const v=res.status==="correct"?["ok","Correct!"]:res.status==="wrong"?["no","Wrong answer"]:["to","Time is up"];
+      stage=head+`<div class="verdict ${v[0]}">${v[1]}<span class="pts">${res.pts>0?"+":""}${res.pts}</span></div>
+        <div class="qtext">${esc(Q.q)}</div><div class="options">${optHTML}</div>
+        <div class="explain"><b>Solution:</b> ${esc(Q.opts[0])}. ${esc(Q.expl)}</div>
+        <div class="actions"><button class="btn primary" id="next">${st.turn+1>=totalTurns()?"See final results":"Next: "+esc(cfg.names[(st.turn+1)%TEAMS])}</button><span class="hint">Shortcut: Space</span></div>`;
+    } else if(st.paused){
+      stage=head+`<div class="paused"><h3>Paused</h3><p>The question is hidden while the game is paused.</p><button class="btn primary" id="resume">Resume</button></div>`;
+    } else {
+      stage=head+`<div class="qtext">${esc(Q.q)}</div><div class="options">${optHTML}</div>
+        <div class="actions"><button class="btn primary" id="lock" ${st.sel<0?"disabled":""}>Lock answer</button><button class="btn" id="pause">Pause</button>
+        <span class="hint">Pick A–D (keys 1–4), then Lock (Enter). Unlocked answers at time-up score 0.</span></div>`;
+    }
+  }
+  app(header()+`<div class="layout"><div class="card">${stage}</div><aside class="card board" id="board">${boardHTML(t)}</aside></div>`);
+  if(st.phase==="play"&&!st.paused)updTimer(st.remain);
+}
+
+function renderSetup(){
+  const sv=loadSaved();
+  app(`<div class="top"><div class="brand"><i></i>ML Quiz Arena</div><span class="pill">Machine Learning Techniques · BCSML0501A</span></div>
+  <div class="card"><div class="hero"><div class="eyebrow">Live class competition</div><h1>Six teams. Twenty questions each. One winner.</h1>
+  <p>Questions are drawn from all five modules of the lecture plan: Introduction, Classification, Regression, Probabilistic &amp; Clustering, Neural Networks. Every team gets different questions, four from each module.</p></div>
+  <div class="rules"><div class="rule"><b>6</b><span>teams play in turns</span></div><div class="rule"><b>${cfg.rounds}</b><span>questions per team</span></div><div class="rule"><b>${cfg.secs}s</b><span>per question</span></div><div class="rule"><b>${cfg.rounds*6}</b><span>questions in total</span></div></div>
+  <div class="eyebrow" style="margin-bottom:10px">Team names</div>
+  <div class="teams">${cfg.names.map((n,i)=>`<div class="teamin">${dot(i)}<input id="tn${i}" value="${esc(n)}" maxlength="22" aria-label="Team ${i+1} name"></div>`).join("")}</div>
+  <div class="opts">
+    <label>Time per question <select id="o_secs">${[30,45,60,90].map(s=>`<option value="${s}" ${cfg.secs===s?"selected":""}>${s} seconds</option>`).join("")}</select></label>
+    <label>Questions per team <select id="o_rounds"><option value="20" ${cfg.rounds===20?"selected":""}>20 (full game)</option><option value="10" ${cfg.rounds===10?"selected":""}>10 (shorter)</option><option value="5" ${cfg.rounds===5?"selected":""}>5 (quick test)</option></select></label>
+    <label><input type="checkbox" id="o_bonus" ${cfg.bonus?"checked":""}> Speed bonus (up to +5)</label>
+    <label><input type="checkbox" id="o_neg" ${cfg.neg?"checked":""}> Negative marking (−2 for wrong)</label>
+    <label><input type="checkbox" id="o_snd" ${cfg.sound?"checked":""}> Sound</label></div>
+  <div class="hint" style="margin-bottom:16px">Scoring: correct answer = 10 marks. Final ranking is by total marks; a tie is broken by more correct answers, then by less total time used.</div>
+  <div class="row"><button class="btn primary" id="begin">Start the game</button>${sv?`<button class="btn" id="resumeSaved">Resume saved game (${sv.results.length}/${sv.cfg.rounds*6} done)</button>`:""}</div></div>`);
+}
+
+/* ============ FINAL ============ */
+function renderFinal(){
+  const rk=rank(), w=rk[0], tie=rk[1]&&rk[1].pts===w.pts&&rk[1].ok===w.ok&&Math.abs(rk[1].used-w.used)<0.05;
+  const maxPts=Math.max(1,...rk.map(x=>x.pts));
+  const podiumOrder=[rk[1],rk[0],rk[2]].filter(Boolean), heights={0:"150px",1:"200px",2:"110px"};
+  const podCols=[ "#d8dff5","var(--gold)","#e0a36b" ];
+  const pod=[1,0,2].map((ri,pi)=>{const x=rk[ri];return x?`<div class="pod" style="height:${["150px","200px","110px"][pi]};background:${["#c9d2ee","var(--gold)","#d9a070"][pi]}"><div class="pr">#${ri+1}</div><div class="pn">${esc(cfg.names[x.i])}</div><div class="ps">${x.pts}</div></div>`:""}).join("");
+  const mods=MODS.map(m=>`<th>${esc(m)}</th>`).join("");
+  const perMod=cfg.rounds/5;
+  app(header()+`<div class="card"><div class="winner"><div class="crown">${tie?"It is a tie at the top":"Winner"}</div>
+    <h1 style="color:${COLORS[w.i]}">${tie?esc(cfg.names[w.i])+" &amp; "+esc(cfg.names[rk[1].i]):esc(cfg.names[w.i])}</h1>
+    <div class="total"><b>${w.pts}</b> marks · ${w.ok} of ${cfg.rounds} correct</div>
+    <div class="podium">${pod}</div></div></div>
+  <div class="card sec"><h2>Final ranking</h2><div class="sub">Ranked by marks, then correct answers, then total time used.</div>
+    <div class="tablewrap"><table><thead><tr><th>Rank</th><th class="l">Team</th><th>Marks</th><th>Correct</th><th>Wrong</th><th>Timed out</th><th>Bonus</th><th>Avg time</th></tr></thead><tbody>
+    ${rk.map((x,i)=>`<tr class="${i===0?"first":""}"><td>${i+1}</td><td class="l">${dot(x.i)}${esc(cfg.names[x.i])}</td><td><b>${x.pts}</b></td><td>${x.ok}</td><td>${x.no}</td><td>${x.to}</td><td>${x.bonus}</td><td>${x.played?(x.used/x.played).toFixed(1):"–"}s</td></tr>`).join("")}</tbody></table></div></div>
+  <div class="card sec"><h2>Marks at a glance</h2><div class="sub">&nbsp;</div>${rk.map(x=>`<div class="hbar"><div class="t">${esc(cfg.names[x.i])}</div><div class="tr"><i style="width:${Math.max(0,x.pts)/maxPts*100}%;background:${COLORS[x.i]}"></i></div><div class="v">${x.pts}</div></div>`).join("")}</div>
+  <div class="card sec"><h2>Strength by module</h2><div class="sub">Correct answers out of ${perMod} in each module.</div>
+    <div class="tablewrap"><table><thead><tr><th class="l">Team</th>${mods}</tr></thead><tbody>${rk.map(x=>`<tr><td class="l">${dot(x.i)}${esc(cfg.names[x.i])}</td>${x.mod.map(m=>`<td>${m} / ${perMod}</td>`).join("")}</tr>`).join("")}</tbody></table></div></div>
+  <div class="card sec"><h2>Answer key and solutions</h2><div class="sub">Every question that was asked, with the correct answer and what each team chose.</div>
+    <div class="filters"><select id="f_team" aria-label="Filter by team"><option value="-1">All teams</option>${cfg.names.map((n,i)=>`<option value="${i}">${esc(n)}</option>`).join("")}</select>
+    <select id="f_mod" aria-label="Filter by module"><option value="-1">All modules</option>${MODS.map((m,i)=>`<option value="${i}">${esc(m)}</option>`).join("")}</select>
+    <select id="f_res" aria-label="Filter by result"><option value="all">All results</option><option value="correct">Correct</option><option value="wrong">Wrong</option><option value="timeout">Timed out</option></select></div>
+    <div class="key" id="key"></div></div>
+  <div class="row sec"><button class="btn primary" id="again">Play again</button><button class="btn" id="copy">Copy results</button></div>`);
+  drawKey(); confetti();
+}
+function drawKey(){
+  const ft=+$("#f_team").value, fm=+$("#f_mod").value, fr=$("#f_res").value;
+  const list=st.results.filter(r=>(ft<0||r.team===ft)&&(fm<0||r.mod===fm)&&(fr==="all"||r.status===fr));
+  $("#key").innerHTML=list.length?list.map(r=>{
+    const Q=qFor(r.turn), cls=r.status==="correct"?"ok":r.status==="wrong"?"no":"to";
+    const yours=r.status==="timeout"?(r.selOrig>=0?"Not locked in time":"No answer"):`${esc(cfg.names[r.team])} answered: ${esc(Q.opts[r.selOrig])} ${r.status==="correct"?"✓":"✗"}`;
+    return `<div class="ans ${cls}"><div class="meta"><span class="tg" style="background:${COLORS[r.team]}">${esc(cfg.names[r.team])}</span><span>Round ${r.round+1}</span><span>${esc(MODS[r.mod])}</span><span>${r.pts>0?"+":""}${r.pts} marks</span></div>
+    <div class="q">${esc(Q.q)}</div><div class="a">Correct answer: <b>${esc(Q.opts[0])}</b></div><div class="y">${yours}</div><div class="e">${esc(Q.expl)}</div></div>`}).join(""):`<div class="hint">No questions match these filters.</div>`;
+}
+
+/* ============ ACTIONS ============ */
+function bind(){
+  const on=(id,fn)=>{const e=document.getElementById(id);if(e)e.onclick=fn};
+  on("snd",()=>{cfg.sound=!cfg.sound;render()});
+  on("endg",()=>{ if(!st.endArm){st.endArm=true;render();setTimeout(()=>{if(st.endArm){st.endArm=false;if(st.phase!=="final")render()}},4000)} else {st.endArm=false;stopTimer();st.phase="final";clearSaved();render()} });
+  on("begin",beginGame);
+  on("resumeSaved",()=>{const s=loadSaved();cfg=s.cfg;st.results=s.results;st.turn=s.results.length;st.phase="ready";render()});
+  on("start",startTurn); on("lock",lock); on("pause",pause); on("resume",resume); on("next",next);
+  on("again",()=>{stopTimer();st={phase:"setup",turn:0,results:[],sel:-1,deadline:0,remain:0,paused:false,timer:null,lastSec:-1,endArm:false};$("#confetti").hidden=true;render()});
+  on("copy",copyResults);
+  document.querySelectorAll(".opt").forEach(b=>b.onclick=()=>pick(+b.dataset.j));
+  ["f_team","f_mod","f_res"].forEach(id=>{const e=document.getElementById(id);if(e)e.onchange=drawKey});
+  ["o_secs","o_rounds"].forEach(id=>{const e=document.getElementById(id);if(e)e.onchange=()=>{readSetup();render()}});
+}
+function readSetup(){
+  cfg.names=cfg.names.map((n,i)=>{const e=$("#tn"+i);return e&&e.value.trim()?e.value.trim():"Team "+(i+1)});
+  cfg.secs=+$("#o_secs").value; cfg.rounds=+$("#o_rounds").value;
+  cfg.bonus=$("#o_bonus").checked; cfg.neg=$("#o_neg").checked; cfg.sound=$("#o_snd").checked;
+}
+function beginGame(){ readSetup(); st.results=[]; st.turn=0; st.phase="ready"; clearSaved(); render(); }
+function startTurn(){ st.sel=-1; st.paused=false; st.remain=cfg.secs*1000; st.deadline=Date.now()+st.remain; st.lastSec=-1; st.phase="play"; sndStart(); render(); runTimer(); }
+function runTimer(){ stopTimer(); st.timer=setInterval(tick,100); }
+function stopTimer(){ if(st.timer){clearInterval(st.timer);st.timer=null} }
+function tick(){ if(st.paused||st.phase!=="play")return; const left=Math.max(0,st.deadline-Date.now()); st.remain=left; updTimer(left);
+  const s=Math.ceil(left/1000); if(s!==st.lastSec){st.lastSec=s; if(s<=10&&s>0)sndTick()} if(left<=0)finish("timeout"); }
+function updTimer(left){
+  const ring=$("#ring"), num=$("#tnum"), box=$("#timer"); if(!ring)return;
+  const frac=left/(cfg.secs*1000), s=Math.ceil(left/1000);
+  ring.style.strokeDashoffset=(276.46*(1-frac)).toFixed(2); num.textContent=s;
+  box.classList.toggle("low",s<=10); ring.style.stroke=s<=10?"var(--bad)":COLORS[qFor(st.turn).team];
+}
+function pick(j){ if(st.phase!=="play"||st.paused)return; st.sel=j;
+  document.querySelectorAll(".opt").forEach((b,k)=>b.classList.toggle("sel",k===j)); const l=$("#lock"); if(l)l.disabled=false; }
+function lock(){ if(st.phase==="play"&&st.sel>=0)finish("answered"); }
+function pause(){ if(st.phase!=="play")return; st.paused=true; st.remain=Math.max(0,st.deadline-Date.now()); render(); }
+function resume(){ st.paused=false; st.deadline=Date.now()+st.remain; render(); }
+function finish(kind){
+  stopTimer(); const Q=qFor(st.turn), left=Math.max(0,st.deadline-Date.now()), used=Math.min(cfg.secs,cfg.secs-left/1000);
+  let status="timeout", pts=0, bonus=0, selOrig=st.sel>=0?Q.perm[st.sel]:-1;
+  if(kind==="answered"){
+    if(selOrig===0){status="correct"; if(cfg.bonus)bonus=Math.round(5*left/(cfg.secs*1000)); pts=10+bonus; sndOk();}
+    else {status="wrong"; pts=cfg.neg?-2:0; sndNo();}
+  } else sndNo();
+  st.results.push({turn:st.turn,team:Q.team,round:Q.round,mod:Q.mod,status,pts,bonus,used:+used.toFixed(1),selOrig,selDisp:kind==="answered"?st.sel:-1});
+  st.phase="reveal"; st.paused=false; save(); render();
+}
+function next(){ if(st.phase!=="reveal")return; st.turn++; if(st.turn>=totalTurns()){st.phase="final";clearSaved();} else st.phase="ready"; render(); window.scrollTo(0,0); }
+function copyResults(){
+  const rk=rank(); const txt="ML Quiz Arena — Final result\n"+rk.map((x,i)=>`${i+1}. ${cfg.names[x.i]}: ${x.pts} marks (${x.ok}/${cfg.rounds} correct)`).join("\n");
+  const done=()=>{const t=document.createElement("div");t.className="toast";t.textContent="Results copied";document.body.appendChild(t);setTimeout(()=>t.remove(),1800)};
+  try{navigator.clipboard.writeText(txt).then(done,()=>{})}catch(e){}
+}
+document.addEventListener("keydown",e=>{
+  if(/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName))return;
+  const k=e.key;
+  if(st.phase==="ready"&&(k===" "||k==="Enter")){e.preventDefault();startTurn()}
+  else if(st.phase==="play"){ if(/^[1-4]$/.test(k))pick(+k-1); else if(/^[a-dA-D]$/.test(k))pick("abcd".indexOf(k.toLowerCase())); else if(k==="Enter"){e.preventDefault();lock()} else if(k==="p"||k==="P"){st.paused?resume():pause()} }
+  else if(st.phase==="reveal"&&(k===" "||k==="Enter")){e.preventDefault();next()}
+});
+
+/* ---- confetti ---- */
+function confetti(){
+  const c=$("#confetti"); c.hidden=false; const x=c.getContext("2d"); c.width=innerWidth; c.height=innerHeight;
+  const cols=["#ffd24a","#ff6b6b","#8be04e","#38d6e6","#7b93ff","#e272ff"];
+  const P=[...Array(160)].map(()=>({x:Math.random()*c.width,y:-20-Math.random()*c.height*.6,w:6+Math.random()*6,h:8+Math.random()*8,vy:2+Math.random()*3.5,vx:-1.5+Math.random()*3,r:Math.random()*6,vr:-.2+Math.random()*.4,c:cols[Math.floor(Math.random()*6)]}));
+  if(matchMedia("(prefers-reduced-motion:reduce)").matches){c.hidden=true;return}
+  const t0=Date.now();(function f(){const el=Date.now()-t0; x.clearRect(0,0,c.width,c.height);
+    P.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.w/2,-p.h/2,p.w,p.h);x.restore()});
+    if(el<6500&&st.phase==="final")requestAnimationFrame(f); else c.hidden=true})();
+}
+
+render();
+</script>
+
+</body></html>

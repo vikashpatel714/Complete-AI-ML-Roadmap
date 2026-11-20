@@ -1,0 +1,218 @@
+<!DOCTYPE html><html lang="en" data-theme="galaxy"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Probabilistic &amp; Clustering Techniques – Visual Notes</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:inherit}html{scroll-padding-top:70px}
+[data-theme=galaxy]{--bg:radial-gradient(ellipse at 30% 20%,#2b1269,#0b0620 60%,#050212);--fg:#f1eefe;--card:rgba(24,14,60,.8);--a:#a78bfa;--b:#60a5fa;--m:#c4bde6;--bt:#0b0620}
+[data-theme=hole]{--bg:radial-gradient(circle,#1a0f05,#050505 65%);--fg:#fff4e8;--card:rgba(20,12,8,.82);--a:#ff9a3c;--b:#ffe2b8;--m:#e0c6aa;--bt:#1a0f05}
+[data-theme=nova]{--bg:radial-gradient(circle,#4a0d0d,#12040a 70%);--fg:#fff1e6;--card:rgba(40,8,8,.8);--a:#ff6a3d;--b:#ffd23f;--m:#ecc4b2;--bt:#2a0606}
+[data-theme=aurora]{--bg:linear-gradient(180deg,#03140f,#06222a 60%,#02090d);--fg:#e9fff7;--card:rgba(4,30,30,.8);--a:#3dffa7;--b:#2dd4d4;--m:#acdfd0;--bt:#02140f}
+[data-theme=neon]{--bg:linear-gradient(180deg,#0a0414,#1a0630 60%,#080214);--fg:#f6eaff;--card:rgba(20,6,40,.82);--a:#ff2bd6;--b:#22e6ff;--m:#d2b4ec;--bt:#12041e}
+[data-theme=ocean]{--bg:linear-gradient(180deg,#021b3a,#03304f 60%,#010d1c);--fg:#e8f6ff;--card:rgba(2,35,66,.8);--a:#35d0ff;--b:#5cffc8;--m:#a9d0e6;--bt:#021b3a}
+[data-theme=sunset]{--bg:linear-gradient(180deg,#2a0a4a,#a1296b 45%,#ff8a3d);--fg:#fff7ef;--card:rgba(50,10,64,.8);--a:#ffb347;--b:#ff6fa8;--m:#f6d8e6;--bt:#2a0a4a}
+[data-theme=paper]{--bg:#f6f3ec;--fg:#1d2230;--card:rgba(255,255,255,.94);--a:#4f46e5;--b:#0891b2;--m:#505a6c;--bt:#fff}
+body{margin:0;background:var(--bg) fixed;color:var(--fg);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh}
+#bg{position:fixed;inset:0;z-index:0;pointer-events:none}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;padding:8px;background:var(--card);backdrop-filter:blur(8px)}
+nav button{font-size:13px;padding:5px 10px;background:transparent;color:var(--fg);border:1px solid var(--a)}
+nav button.on{background:linear-gradient(90deg,var(--a),var(--b));color:var(--bt)}
+main{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:12px 14px 40px}
+h1{font-size:clamp(26px,6vw,42px);margin:18px 0 6px;background:linear-gradient(90deg,var(--a),var(--b));-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{margin:0 0 6px;font-size:22px;color:var(--a)}h3{margin:12px 0 4px;font-size:16px;color:var(--b)}
+.card{background:var(--card);border:1px solid color-mix(in srgb,var(--a) 45%,transparent);border-radius:16px;padding:16px;margin:16px 0;backdrop-filter:blur(6px)}
+.m{color:var(--m);margin:4px 0 10px}.row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start}
+button{background:linear-gradient(90deg,var(--a),var(--b));color:var(--bt);border:0;border-radius:10px;padding:7px 12px;font-weight:700;cursor:pointer;font-size:14px}
+select,input[type=text]{background:transparent;color:var(--fg);border:1px solid var(--a);border-radius:8px;padding:6px;font-size:14px;width:100%}
+select option{color:#111}input[type=range]{width:100%;accent-color:var(--a)}
+label{display:block;font-size:13px;color:var(--m)}.sl{min-width:150px;flex:1}
+svg{max-width:100%;height:auto}svg text{fill:var(--fg);font-size:12px;font-family:inherit}svg line,svg path{stroke:var(--m);stroke-width:1.5;fill:none}
+canvas.sim{max-width:100%;border:1px solid var(--a);border-radius:10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{padding:5px 10px;border-radius:20px;border:1px solid var(--a);font-size:13px;transition:.3s}
+.chip.on{background:linear-gradient(90deg,var(--a),var(--b));color:var(--bt);transform:scale(1.08)}
+.out{font-family:ui-monospace,Menlo,monospace;font-size:13px;color:var(--b);margin:6px 0}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}.g>div{border:1px solid var(--a);border-radius:12px;padding:10px;font-size:14px}
+.grid{display:grid;gap:1px}.grid div{width:24px;height:24px;font-size:9px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(128,128,128,.3);cursor:pointer}
+table{border-collapse:collapse;width:100%;font-size:14px}td,th{border:1px solid var(--a);padding:6px;text-align:left}th{color:var(--b)}
+.f{background:color-mix(in srgb,var(--a) 20%,transparent);padding:2px 6px;border-radius:6px;font-family:ui-monospace,monospace}
+a{color:var(--b)}footer{text-align:center;color:var(--m);font-size:13px}
+@media(prefers-reduced-motion:reduce){.chip{transition:none}}
+.out{white-space:pre-wrap}canvas.sim{background:rgba(128,128,128,.08)}</style></head><body><canvas id="bg"></canvas>
+<svg width="0" height="0" style="position:absolute"><defs><marker id="ar" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="#ff5d8f" stroke="none"/></marker></defs></svg>
+<nav id="sw" aria-label="Theme switcher"></nav>
+<main>
+<h1>🎲 Probabilistic &amp; Clustering Techniques</h1>
+<p class="m">Module 4 for complete beginners: Bayes, Naive Bayes, belief networks, tree ensembles (Random Forest, AdaBoost, Gradient Boosting, XGBoost), K-Means, K-Medoids, K-Modes and hierarchical clustering. Play with every demo, then use the cheat sheet to revise.</p>
+<div class="chips" id="toc"></div>
+
+<section class="card" id="s1"><h2>1. Bayesian learning: update your belief with evidence</h2>
+<p class="m"><span class="f">P(A|B) = P(B|A) × P(A) / P(B)</span>. Start with a <b>prior</b> belief, see evidence, get a <b>posterior</b> belief. Example: a medical test. Even a good test can mislead when the disease is rare. Move the sliders.</p>
+<div class="row" id="b0"></div><div id="bo" style="margin-top:8px"></div><div class="out" id="bt"></div></section>
+
+<section class="card" id="s2"><h2>2. Naive Bayes classifier</h2>
+<p class="m">Pick the class with the highest <span class="f">P(class) × P(word1|class) × P(word2|class) × …</span>. “Naive” = it assumes words are independent, which is simple, fast and works surprisingly well (spam filters). Tap words in an email:</p>
+<div class="chips" id="nc"></div><div style="background:#ff5d8f33;border-radius:8px;margin:10px 0"><div id="nbar" style="height:14px;background:#ff5d8f;border-radius:8px"></div></div><div class="out" id="no"></div></section>
+
+<section class="card" id="s3"><h2>3. Bayesian belief network</h2>
+<p class="m">A graph where arrows mean “influences”. Each node stores a probability table. Rain may switch the sprinkler off, and both can wet the grass. Set evidence (what you observed) and watch every other probability update. Try: Grass wet = true, then Rain = false.</p>
+<div class="row"><div class="sl"><label>Rain</label><select id="er"><option value="u">unknown</option><option value="t">true</option><option value="f">false</option></select></div><div class="sl"><label>Sprinkler</label><select id="es"><option value="u">unknown</option><option value="t">true</option><option value="f">false</option></select></div><div class="sl"><label>Grass wet</label><select id="ew"><option value="u">unknown</option><option value="t">true</option><option value="f">false</option></select></div></div><div id="bs2"></div></section>
+
+<section class="card" id="s4"><h2>4. Tree ensembles: Bagging vs Boosting</h2>
+<p class="m">One decision tree overfits and changes a lot with small data changes. Many trees together are stronger (wisdom of the crowd).</p>
+<div class="chips" id="bg1"><span class="chip">BAGGING</span><span class="chip">Data</span><span class="chip">Random bootstrap samples</span><span class="chip">Trees train in PARALLEL</span><span class="chip">Vote / average</span></div><p></p>
+<div class="chips" id="bg2"><span class="chip">BOOSTING</span><span class="chip">Tree 1</span><span class="chip">Mistakes get more weight</span><span class="chip">Tree 2 fixes them (SEQUENTIAL)</span><span class="chip">Weighted sum</span></div>
+<table style="margin-top:10px"><tr><th></th><th>Bagging</th><th>Boosting</th></tr><tr><td>Goal</td><td>Reduce variance (overfitting)</td><td>Reduce bias (underfitting)</td></tr><tr><td>Trees</td><td>Independent, deep</td><td>Dependent, shallow</td></tr><tr><td>Example</td><td>Random Forest</td><td>AdaBoost, Gradient Boosting, XGBoost</td></tr></table>
+<h3>Sampling with replacement (bootstrap)</h3><p class="m">Draw 10 items from 10, putting each back after drawing. Some repeat, some never appear (out-of-bag, about 37%).</p><button id="bb">🎲 Draw a bootstrap sample</button><div id="bo2"></div></section>
+
+<section class="card" id="s5"><h2>5. Random Forest</h2>
+<p class="m">Bagging + one extra trick: each split looks at a <b>random subset of features</b>, so trees differ. Final answer = majority vote. Each weak tree below is right only 62% of the time. Add trees and watch accuracy rise.</p>
+<div class="row" id="r0"></div><div id="ro2"></div></section>
+
+<section class="card" id="s6"><h2>6. AdaBoost</h2>
+<p class="m">Start with equal sample weights. Each round: train a tiny “stump” (one split), give it a vote weight α (more accurate = bigger α), then <b>increase the weight of misclassified points</b>. Dot size = weight. Green/pink = two classes; the line is the stump.</p>
+<canvas class="sim" id="ac" width="420" height="120"></canvas><p><button id="an">Next round</button> <button id="arr">Reset</button></p><div class="out" id="ao"></div></section>
+
+<section class="card" id="s7"><h2>7. Gradient Boosting &amp; XGBoost</h2>
+<p class="m">Start with a simple guess (the average). Each new tree learns the <b>residual</b> (what is still wrong) and adds a small correction: <span class="f">new prediction = old + learning rate × tree</span>. Click Add tree repeatedly.</p>
+<canvas class="sim" id="gc2" width="420" height="180"></canvas><div class="row" id="g0"></div><p><button id="gta">+ Add tree</button> <button id="gtr">Reset</button></p><div class="out" id="go"></div>
+<h3>XGBoost = Gradient Boosting, engineered</h3><div class="g"><div><b>Regularization</b><br>Penalty on tree size and leaf values stops overfitting.</div><div><b>Second-order gradients</b><br>Uses slope and curvature for smarter updates.</div><div><b>Fast</b><br>Parallel split search, cache-aware, handles big data.</div><div><b>Missing values</b><br>Learns the best default direction automatically.</div></div></section>
+
+<section class="card" id="s8"><h2>8. Unsupervised learning, clustering &amp; distance measures</h2>
+<p class="m">No labels! The algorithm groups similar items by itself (customer segments, news topics). “Similar” means “close”, so we need a distance. Move points A and B:</p>
+<div class="row"><canvas class="sim" id="dc" width="300" height="300"></canvas><div class="sl"><div class="row" id="d0"></div><div class="out" id="do"></div><p class="m">Euclidean = straight line. Manhattan = city blocks. Cosine = difference in direction (good for text).</p></div></div></section>
+
+<section class="card" id="s9"><h2>9. K-Means clustering</h2>
+<div class="chips"><span class="chip">1 Pick K centroids</span><span class="chip">2 Assign each point to the nearest centroid</span><span class="chip">3 Move centroid to the mean</span><span class="chip">4 Repeat until nothing changes</span></div>
+<p class="m">Objective: minimise <span class="f">J = Σ ‖point − its centroid‖²</span>. Squares = centroids. Press Step twice to see assign, then move. <b>Initialization matters</b>: press “New random init” a few times; bad starts can give bad clusters. The fix is K-Means++ (spread the starting centroids far apart).</p>
+<div class="row"><canvas class="sim" id="kc" width="420" height="300"></canvas><div class="sl"><div id="k0"></div><p><button id="ki">New random init</button> <button id="ks2">Step</button> <button id="kr">Run</button></p><div class="out" id="ko2"></div></div></div>
+<h3>Choosing K: the elbow method</h3><p class="m">Run K-Means for K = 1 to 7 and plot J. Pick the “elbow” where the drop slows down (here K = 3). Yellow dot = your current K.</p><canvas class="sim" id="ec" width="300" height="160"></canvas></section>
+
+<section class="card" id="s10"><h2>10. K-Medoids &amp; K-Modes</h2>
+<div class="g"><div><b>K-Medoids (PAM)</b><br>The centre must be a real data point (medoid). It is robust to outliers because the mean is not used.</div><div><b>K-Modes</b><br>For categorical data (colour, size). Centre = most frequent value (mode). Distance = number of mismatches.</div></div>
+<h3>Outlier test: mean vs medoid</h3><p class="m">Drag the outlier far away. The mean (pink) runs after it; the medoid (green) stays in the crowd.</p><div class="row" id="m0"></div><canvas class="sim" id="mc" width="420" height="90"></canvas><div class="out" id="mo2"></div>
+<h3>K-Modes distance</h3><p class="m">Cluster 1 mode = (Red, Small, Round). Cluster 2 mode = (Blue, Large, Square). Build a new record:</p><div class="row"><div class="sl"><select id="ma"><option>Red</option><option>Blue</option></select></div><div class="sl"><select id="mb"><option>Small</option><option>Large</option></select></div><div class="sl"><select id="mc3"><option>Round</option><option>Square</option></select></div></div><div class="out" id="mm"></div></section>
+
+<section class="card" id="s11"><h2>11. Hierarchical clustering</h2>
+<p class="m">Builds a tree of clusters (a <b>dendrogram</b>) so you need not choose K first. Cut the tree at any height to get clusters. Linkage = how to measure distance between two clusters: <b>Single</b> = closest pair (can chain), <b>Complete</b> = farthest pair (compact balls).</p>
+<div class="row"><div class="sl"><label>Linkage</label><select id="hl"><option value="single">Single linkage</option><option value="complete">Complete linkage</option></select></div><div class="row" id="h0" style="flex:2"></div></div>
+<div class="row"><canvas class="sim" id="hc" width="300" height="240"></canvas><canvas class="sim" id="hd" width="300" height="240"></canvas></div>
+<p class="m">Dashed line = your cut. The leaves are the numbered points; a taller join means the clusters were farther apart.</p>
+<h3>AGNES vs DIANA (number = clusters left)</h3><p class="m"><b>AGNES</b> (Agglomerative Nesting, bottom-up): every point starts alone, repeatedly merge the two closest clusters.</p><div class="chips" id="ag"></div>
+<p class="m"><b>DIANA</b> (Divisive Analysis, top-down): start with one big cluster, repeatedly split the most spread-out cluster.</p><div class="chips" id="di"></div></section>
+
+<section class="card" id="s12"><h2>12. Quick revision cheat sheet</h2><table>
+<tr><th>Topic</th><th>One line</th></tr><tr><td>Bayes</td><td>Posterior = likelihood × prior / evidence</td></tr><tr><td>Naive Bayes</td><td>Multiply per-feature probabilities (assumes independence), pick the max class</td></tr><tr><td>Belief network</td><td>Directed graph + probability tables; infer by evidence</td></tr><tr><td>Bagging / Random Forest</td><td>Bootstrap samples, parallel trees, random features, vote</td></tr><tr><td>AdaBoost</td><td>Reweight mistakes; weighted vote of stumps</td></tr><tr><td>Gradient Boosting</td><td>Each tree fits the residuals; add with a learning rate</td></tr><tr><td>XGBoost</td><td>Regularised, second-order, fast gradient boosting</td></tr><tr><td>Distances</td><td>Euclidean, Manhattan, Cosine</td></tr><tr><td>K-Means</td><td>Assign → update means; minimise J; elbow for K; K-Means++ init</td></tr><tr><td>K-Medoids / K-Modes</td><td>Real-point centre (outlier-robust) / mode centre for categories</td></tr><tr><td>Hierarchical</td><td>Dendrogram; single vs complete linkage; AGNES bottom-up, DIANA top-down</td></tr></table></section>
+<footer>Prepared for Vikash Patel</footer></main>
+<script>
+const $=s=>document.querySelector(s),sg=x=>1/(1+Math.exp(-x)),cs=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+/* theme + background */
+const TH=[['galaxy','🌌 Galaxy'],['hole','🕳️ Black Hole'],['nova','💥 Supernova'],['aurora','🌿 Aurora'],['neon','🌆 Cyberpunk'],['ocean','🌊 Deep Ocean'],['sunset','🌅 Sunset Retro'],['paper','📄 Light Paper']];
+const cv=$('#bg'),c=cv.getContext('2d');let W,H,P=[],mode='galaxy';
+function rs(){W=cv.width=innerWidth;H=cv.height=innerHeight}addEventListener('resize',rs);rs();
+for(let i=0;i<130;i++)P.push({x:Math.random(),y:Math.random(),r:Math.random()*2+.6,a:Math.random()*6.28,s:Math.random()*.9+.3,d:Math.random()*.4+.08});
+function frame(t){c.clearRect(0,0,W,H);const m=mode,cx=W/2,cy=H/2;
+if(m=='galaxy')P.forEach(p=>{c.fillStyle=`rgba(255,255,255,${.5+.5*Math.sin(t*.002*p.s+p.a)})`;c.beginPath();c.arc(p.x*W,p.y*H,p.r,0,7);c.fill()});
+else if(m=='hole'){let g=c.createRadialGradient(cx,cy,10,cx,cy,Math.min(W,H)*.5);g.addColorStop(0,'rgba(255,200,120,.5)');g.addColorStop(.4,'rgba(255,120,30,.15)');g.addColorStop(1,'transparent');c.fillStyle=g;c.fillRect(0,0,W,H);
+P.forEach(p=>{const an=p.a+t*.0004/p.d,r=p.d*Math.min(W,H)*1.1,x=cx+Math.cos(an)*r*1.5,y=cy+Math.sin(an)*r*.38;c.fillStyle=`rgba(255,${190-p.d*250|0},${120-p.d*200|0},.85)`;c.beginPath();c.arc(x,y,p.r,0,7);c.fill()});c.fillStyle='#000';c.beginPath();c.arc(cx,cy,34,0,7);c.fill()}
+else if(m=='nova')P.forEach(p=>{const l=(t*.00012*p.s+p.a)%1,r=l*Math.max(W,H)*.6,an=p.a*9;c.fillStyle=`hsla(${10+l*50},100%,${55+l*10}%,${1-l})`;c.beginPath();c.arc(cx+Math.cos(an)*r,cy+Math.sin(an)*r,p.r*(2-l),0,7);c.fill()});
+else if(m=='aurora'){for(let k=0;k<4;k++){c.beginPath();for(let x=0;x<=W;x+=20){const y=H*.28+Math.sin(x*.004+t*.0005+k)*60+k*38;x?c.lineTo(x,y):c.moveTo(x,y)}c.strokeStyle=`hsla(${150+k*22},85%,60%,.2)`;c.lineWidth=34;c.stroke()}P.slice(0,50).forEach(p=>{c.fillStyle='rgba(255,255,255,.5)';c.fillRect(p.x*W,p.y*H*.6,p.r,p.r)})}
+else if(m=='neon'){const hz=H*.55;c.lineWidth=1.2;for(let i=0;i<14;i++){const y=hz+(H-hz)*Math.pow(((i+(t*.0006)%1)/14),2);c.strokeStyle='rgba(34,230,255,.4)';c.beginPath();c.moveTo(0,y);c.lineTo(W,y);c.stroke()}for(let x=-12;x<=12;x++){c.strokeStyle='rgba(255,43,214,.4)';c.beginPath();c.moveTo(cx+x*18,hz);c.lineTo(cx+x*W/12,H);c.stroke()}}
+else if(m=='ocean')P.forEach(p=>{const y=((p.y*H-t*.03*p.s)%H+H)%H,x=p.x*W+Math.sin(t*.001+p.a)*14;c.strokeStyle='rgba(92,255,200,.5)';c.fillStyle='rgba(53,208,255,.12)';c.beginPath();c.arc(x,y,p.r*4,0,7);c.fill();c.stroke()});
+else if(m=='sunset'){let g=c.createLinearGradient(0,H*.4,0,H*.75);g.addColorStop(0,'#ffe27a');g.addColorStop(1,'#ff4f9a');c.fillStyle=g;c.beginPath();c.arc(cx,H*.62,Math.min(W,H)*.2,0,7);c.fill();c.fillStyle='rgba(42,10,74,.7)';for(let i=0;i<6;i++)c.fillRect(0,H*.62+i*i*5+(Math.sin(t*.001+i)*3),W,4+i*2);P.slice(0,40).forEach(p=>{c.fillStyle='rgba(255,255,255,.35)';c.fillRect(((p.x*W+t*.02*p.s)%W),p.y*H*.4,p.r,p.r)})}
+else P.slice(0,60).forEach(p=>{c.fillStyle='rgba(79,70,229,.13)';c.beginPath();c.arc((p.x*W+Math.sin(t*.0003+p.a)*30),((p.y*H-t*.01*p.s)%H+H)%H,p.r*3,0,7);c.fill()});
+requestAnimationFrame(frame)}requestAnimationFrame(frame);
+TH.forEach(([k,n],i)=>{const b=document.createElement('button');b.textContent=n;b.onclick=()=>{mode=k;document.documentElement.dataset.theme=k;[...$('#sw').children].forEach(x=>x.classList.remove('on'));b.classList.add('on');redraw()};if(!i)b.classList.add('on');$('#sw').append(b)});
+$('#toc').innerHTML=[['s1','Bayes'],['s2','Naive Bayes'],['s3','Belief nets'],['s4','Bagging/Boosting'],['s5','Random Forest'],['s6','AdaBoost'],['s7','Gradient Boost/XGBoost'],['s8','Distance'],['s9','K-Means'],['s10','Medoids/Modes'],['s11','Hierarchical'],['s12','Cheat sheet']].map(([i,n])=>`<a class="chip" href="#${i}">${n}</a>`).join('');
+const sl=(id,l,mn,mx,st,v)=>`<div class="sl"><label>${l}: <b id="o${id}">${v}</b></label><input type="range" id="${id}" min="${mn}" max="${mx}" step="${st}" value="${v}"></div>`;
+const PAL=['#ff5d8f','#2ee59d','#ffd23f','#5cc8ff','#c084fc','#ff9a3c','#9be564'];
+const rng=s=>()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+const rd=id=>{const v=+$('#'+id).value;$('#o'+id).textContent=v;return v};
+/* 1 bayes */
+$('#b0').innerHTML=sl('bp','Disease prevalence %',1,50,1,2)+sl('bsn','Test sensitivity %',50,100,1,95)+sl('bf','False-positive rate %',1,30,1,8);
+function bayes(){const p=rd('bp')/100,s=rd('bsn')/100,f=rd('bf')/100,sick=1000*p,tp=sick*s,fp=(1000-sick)*f,post=tp/(tp+fp);
+$('#bo').innerHTML=`<div style="display:flex;height:26px;border-radius:8px;overflow:hidden;font-weight:700"><div style="width:${tp/(tp+fp)*100}%;background:#2ee59d;color:#111;text-align:center">${tp.toFixed(0)}</div><div style="width:${fp/(tp+fp)*100}%;background:#ff5d8f;color:#111;text-align:center">${fp.toFixed(0)}</div></div>`;
+$('#bt').textContent=`Out of 1000 people: ${sick.toFixed(0)} are sick and ${tp.toFixed(0)} of them test positive (green). ${(1000-sick).toFixed(0)} are healthy but ${fp.toFixed(0)} also test positive (pink).\nP(sick | positive) = ${tp.toFixed(0)} / ${(tp+fp).toFixed(0)} = ${(post*100).toFixed(1)}%`}
+$('#b0').oninput=bayes;
+/* 2 naive bayes */
+const NW={free:[.6,.05],win:[.5,.03],offer:[.5,.06],meeting:[.05,.4],report:[.05,.35],lunch:[.08,.3]};const NS=new Set(['free','win']);
+function nb(){$('#nc').innerHTML=Object.keys(NW).map(w=>`<span class="chip ${NS.has(w)?'on':''}" data-w="${w}" style="cursor:pointer">${w}</span>`).join('');let a=.4,b=.6,l1='0.40',l2='0.60';NS.forEach(w=>{a*=NW[w][0];b*=NW[w][1];l1+=` × ${NW[w][0]}`;l2+=` × ${NW[w][1]}`});const p=a/(a+b);
+$('#no').textContent=`Spam score = ${l1} = ${a.toFixed(5)}\nHam score  = ${l2} = ${b.toFixed(5)}\nP(spam | words) = ${(p*100).toFixed(1)}%  →  ${p>.5?'SPAM 🚫':'NOT SPAM ✅'}`;$('#nbar').style.width=p*100+'%'}
+$('#nc').onclick=e=>{const w=e.target.dataset.w;if(w){NS.has(w)?NS.delete(w):NS.add(w);nb()}};
+/* 3 belief net */
+const PS=r=>r?.01:.4,PW=(s,r)=>s&&r?.99:s?.9:r?.8:0;
+function bn(){const ev={R:$('#er').value,S:$('#es').value,W:$('#ew').value},q={R:0,S:0,W:0};let tot=0;
+for(const r of[1,0])for(const s of[1,0])for(const w of[1,0]){if((ev.R=='t'&&!r)||(ev.R=='f'&&r)||(ev.S=='t'&&!s)||(ev.S=='f'&&s)||(ev.W=='t'&&!w)||(ev.W=='f'&&w))continue;const pw=PW(s,r),j=(r?.2:.8)*(s?PS(r):1-PS(r))*(w?pw:1-pw);tot+=j;q.R+=r*j;q.S+=s*j;q.W+=w*j}
+if(!tot){$('#bs2').innerHTML='<p class="out">This combination is impossible in the model.</p>';return}
+const nd=(x,y,l,k,t)=>{const p=q[k]/tot;return `<circle cx="${x}" cy="${y}" r="32" fill="${cs('--a')}" fill-opacity="${.1+.9*p}" stroke="${cs('--a')}"/><text x="${x}" y="${y-3}" text-anchor="middle" style="font-weight:700">${l}</text><text x="${x}" y="${y+13}" text-anchor="middle">${(p*100).toFixed(0)}% true</text><text x="${x}" y="${y+50}" text-anchor="middle" style="fill:${cs('--m')}">${t}</text>`};
+$('#bs2').innerHTML=`<svg viewBox="0 0 420 230" width="480"><line x1="142" y1="55" x2="276" y2="55" marker-end="url(#ar)"/><line x1="126" y1="82" x2="188" y2="132" marker-end="url(#ar)"/><line x1="294" y1="82" x2="232" y2="132" marker-end="url(#ar)"/>${nd(110,55,'Rain','R','P(R)=0.2')}${nd(310,55,'Sprinkler','S','P(S|R): 0.01 / 0.4')}${nd(210,150,'Grass wet','W','P(W|S,R) table')}</svg>`}
+$('#er').onchange=$('#es').onchange=$('#ew').onchange=bn;
+/* 4 bootstrap */
+function bs(){const L='ABCDEFGHIJ'.split(''),pick=L.map(()=>L[Math.random()*10|0]),cnt={};pick.forEach(x=>cnt[x]=(cnt[x]||0)+1);const oob=L.filter(x=>!cnt[x]);
+$('#bo2').innerHTML=`<div class="chips" style="margin-top:8px">${pick.map(x=>`<span class="chip on">${x}</span>`).join('')}</div><div class="out">Unique items in this bag: ${10-oob.length} of 10\nRepeats: ${Object.entries(cnt).filter(e=>e[1]>1).map(e=>e[0]+' ×'+e[1]).join(', ')||'none'}\nOut-of-bag (free test set): ${oob.join(', ')||'none'}</div>`}
+$('#bb').onclick=bs;
+/* 5 random forest */
+$('#r0').innerHTML=sl('rn','Number of trees',1,51,2,5);
+function rf(){const n=rd('rn');let ok=0;for(let t=0;t<3000;t++){let v=0;for(let i=0;i<n;i++)v+=Math.random()<.62?1:0;if(v>n/2)ok++}const vs=Array.from({length:n},()=>Math.random()<.62),y=vs.filter(Boolean).length;
+$('#ro2').innerHTML=`<div class="chips" style="margin-top:8px">${vs.map(v=>`<span class="chip" style="background:${v?'#2ee59d':'#ff5d8f'};color:#111">🌳${v?'✔':'✘'}</span>`).join('')}</div><div class="out">One question: ${y} trees vote correct, ${n-y} wrong → forest says ${y>n/2?'CORRECT ✅':'WRONG ❌'}\nSimulated over 3000 questions: single tree 62%  |  forest of ${n} = ${(ok/30).toFixed(1)}%</div>`}
+$('#r0').oninput=rf;
+/* 6 adaboost */
+const AX=[1,2,3,4,5,6,7,8,9,10],AY=[1,1,1,-1,-1,1,1,-1,-1,-1];let AW,AE;
+function ar(){AW=AX.map(()=>.1);AE=[];ad(null)}
+function an(){let best=null;for(let t=.5;t<10;t++)for(const s of[1,-1]){let e=0;AX.forEach((x,i)=>{if(s*(x<t?1:-1)!=AY[i])e+=AW[i]});if(!best||e<best.e)best={t,s,e}}
+const a=.5*Math.log((1-best.e)/(best.e+1e-9));AX.forEach((x,i)=>{AW[i]*=Math.exp(-a*AY[i]*best.s*(x<best.t?1:-1))});const z=AW.reduce((p,q)=>p+q);AW=AW.map(w=>w/z);best.a=a;AE.push(best);ad(best)}
+function ad(b){const c=$('#ac').getContext('2d');c.clearRect(0,0,420,120);const sc=x=>20+(x-1)*42;AX.forEach((x,i)=>{const mis=b&&b.s*(x<b.t?1:-1)!=AY[i];c.beginPath();c.arc(sc(x),60,5+AW[i]*70,0,7);c.fillStyle=AY[i]>0?'#2ee59d':'#ff5d8f';c.globalAlpha=.85;c.fill();c.globalAlpha=1;if(mis){c.lineWidth=3;c.strokeStyle='#ffd23f';c.stroke()}});
+if(b){c.strokeStyle=cs('--a');c.lineWidth=2;c.beginPath();c.moveTo(sc(b.t),5);c.lineTo(sc(b.t),115);c.stroke()}
+let ok=0;AX.forEach((x,i)=>{const s=AE.reduce((p,e)=>p+e.a*e.s*(x<e.t?1:-1),0);if((s>0?1:-1)==AY[i])ok++});
+$('#ao').textContent=b?`Round ${AE.length}: stump error = ${b.e.toFixed(2)}, vote weight α = ${b.a.toFixed(2)}.\nYellow rings = mistakes → they grow bigger for the next round.\nEnsemble of ${AE.length} stump(s) classifies ${ok}/10 correctly.`:'Press “Next round”. Dot size = sample weight.'}
+$('#an').onclick=an;$('#arr').onclick=ar;
+/* 7 gradient boosting */
+const GX=Array.from({length:24},(_,i)=>i/23),GY=GX.map((x,i)=>Math.sin(x*6.28)+.25*Math.sin(i*7.3));let GP,GN;
+$('#g0').innerHTML=sl('gl','Learning rate',.1,1,.1,.5);$('#g0').oninput=()=>rd('gl');
+function gr2(){const m=GY.reduce((a,b)=>a+b)/GY.length;GP=GX.map(()=>m);GN=0;gdraw()}
+function gt(){const lr=rd('gl'),r=GY.map((y,i)=>y-GP[i]);for(let k=0;k<6;k++){const idx=GX.map((x,i)=>i).filter(i=>GX[i]>=k/6&&(GX[i]<(k+1)/6||k==5));const m=idx.reduce((a,i)=>a+r[i],0)/idx.length;idx.forEach(i=>GP[i]+=lr*m)}GN++;gdraw()}
+function gdraw(){const c=$('#gc2').getContext('2d');c.clearRect(0,0,420,180);const X=x=>10+x*400,Y=y=>90-y*60;c.beginPath();GX.forEach((x,i)=>i?c.lineTo(X(x),Y(GP[i])):c.moveTo(X(x),Y(GP[i])));c.strokeStyle=cs('--a');c.lineWidth=3;c.stroke();GX.forEach((x,i)=>{c.beginPath();c.arc(X(x),Y(GY[i]),4,0,7);c.fillStyle='#ffd23f';c.fill()});
+$('#go').textContent=`Trees added: ${GN}   error (MSE) = ${(GY.reduce((a,y,i)=>a+(y-GP[i])**2,0)/GY.length).toFixed(3)}   (yellow = data, line = model)`}
+$('#gta').onclick=gt;$('#gtr').onclick=gr2;
+/* 8 distance */
+$('#d0').innerHTML=sl('ax','A x',0,10,.5,2)+sl('ay','A y',0,10,.5,3)+sl('bx','B x',0,10,.5,8)+sl('by','B y',0,10,.5,7);
+function dist(){const[a,b,x,y]=['ax','ay','bx','by'].map(rd),c=$('#dc').getContext('2d');c.clearRect(0,0,300,300);const X=v=>20+v*26,Y=v=>280-v*26;c.strokeStyle=cs('--m');c.lineWidth=1.5;c.setLineDash([5,4]);c.beginPath();c.moveTo(X(a),Y(b));c.lineTo(X(x),Y(b));c.lineTo(X(x),Y(y));c.stroke();c.setLineDash([]);c.strokeStyle=cs('--a');c.lineWidth=3;c.beginPath();c.moveTo(X(a),Y(b));c.lineTo(X(x),Y(y));c.stroke();
+[[a,b,'A'],[x,y,'B']].forEach(p=>{c.beginPath();c.arc(X(p[0]),Y(p[1]),8,0,7);c.fillStyle=cs('--b');c.fill();c.fillStyle=cs('--fg');c.font='bold 13px sans-serif';c.fillText(p[2],X(p[0])+10,Y(p[1])-8)});
+const eu=Math.hypot(x-a,y-b),ma=Math.abs(x-a)+Math.abs(y-b),co=1-(a*x+b*y)/((Math.hypot(a,b)*Math.hypot(x,y))||1);
+$('#do').textContent=`Euclidean (solid) = √((${x}−${a})²+(${y}−${b})²) = ${eu.toFixed(2)}\nManhattan (dashed) = |Δx|+|Δy| = ${ma.toFixed(2)}\nCosine distance = 1 − cos(angle) = ${co.toFixed(3)}`}
+$('#d0').oninput=dist;
+/* 9 kmeans */
+const R=rng(7),KD=[];[[2.5,2.5],[7.5,3],[5,7.5]].forEach(c=>{for(let i=0;i<25;i++)KD.push([c[0]+(R()+R()+R()-1.5)*1.6,c[1]+(R()+R()+R()-1.5)*1.6])});
+const near=(p,C)=>{let b=0,bd=1e9;C.forEach((c,j)=>{const d=(p[0]-c[0])**2+(p[1]-c[1])**2;if(d<bd){bd=d;b=j}});return b};
+const mv=(C,A)=>C.map((c,j)=>{const m=KD.filter((p,i)=>A[i]==j);return m.length?[m.reduce((s,p)=>s+p[0],0)/m.length,m.reduce((s,p)=>s+p[1],0)/m.length]:c});
+function km(K,r){const pool=[...KD];let C=[],A;for(let i=0;i<K;i++)C.push([...pool.splice(r()*pool.length|0,1)[0]]);for(let t=0;t<12;t++){A=KD.map(p=>near(p,C));C=mv(C,A)}A=KD.map(p=>near(p,C));return KD.reduce((s,p,i)=>s+(p[0]-C[A[i]][0])**2+(p[1]-C[A[i]][1])**2,0)}
+const EL=[];for(let K=1;K<=7;K++){let b=1e9;for(let i=0;i<6;i++)b=Math.min(b,km(K,rng(K*31+i)));EL.push(b)}
+function elbow(){const c=$('#ec').getContext('2d'),K=+$('#kk').value,mx=EL[0],P=EL.map((v,i)=>[30+i*40,140-v/mx*120]);c.clearRect(0,0,300,160);c.beginPath();P.forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));c.strokeStyle=cs('--a');c.lineWidth=3;c.stroke();P.forEach((p,i)=>{c.beginPath();c.arc(p[0],p[1],i+1==K?8:4,0,7);c.fillStyle=i+1==K?'#ffd23f':cs('--b');c.fill();c.fillStyle=cs('--fg');c.font='11px sans-serif';c.fillText('K='+(i+1),p[0]-9,155)})}
+$('#k0').innerHTML=sl('kk','Number of clusters K',1,6,1,3);
+let KC,KA,KP,KMSG='';
+function kinit(){const K=rd('kk'),pool=[...KD];KC=[];for(let i=0;i<K;i++)KC.push([...pool.splice(Math.random()*pool.length|0,1)[0]]);KA=null;KP=0;kdraw('Centroids placed at random. Press Step.');elbow()}
+function kstep(){if(!KC||KC.length!=+$('#kk').value)return kinit();if(!KP){KA=KD.map(p=>near(p,KC));KP=1;kdraw('Step A: each point joins its NEAREST centroid.')}else{KC=mv(KC,KA);KP=0;kdraw('Step B: each centroid moves to the MEAN of its points.')}}
+function kdraw(msg){KMSG=msg;const c=$('#kc').getContext('2d');c.clearRect(0,0,420,300);const X=v=>10+v*40,Y=v=>290-v*28;KD.forEach((p,i)=>{c.beginPath();c.arc(X(p[0]),Y(p[1]),4,0,7);c.fillStyle=KA?PAL[KA[i]]:cs('--m');c.fill()});KC.forEach((q,j)=>{c.beginPath();c.rect(X(q[0])-8,Y(q[1])-8,16,16);c.fillStyle=PAL[j];c.fill();c.lineWidth=3;c.strokeStyle=cs('--fg');c.stroke()});
+let s=0;if(KA)KD.forEach((p,i)=>s+=(p[0]-KC[KA[i]][0])**2+(p[1]-KC[KA[i]][1])**2);$('#ko2').textContent=msg+(KA?`\nObjective J = ${s.toFixed(1)}  (smaller is better)`:'')}
+$('#k0').oninput=kinit;$('#ki').onclick=kinit;$('#ks2').onclick=kstep;let kt;$('#kr').onclick=()=>{clearInterval(kt);let n=0;kt=setInterval(()=>{kstep();if(++n>14)clearInterval(kt)},550)};
+/* 10 medoids, modes */
+$('#m0').innerHTML=sl('mo','Outlier value',5,100,1,40);
+function med(){const o=rd('mo'),P=[1,2,3,4,o],mean=P.reduce((a,b)=>a+b)/5;let md=P[0],bs=1e9;P.forEach(p=>{const s=P.reduce((a,q)=>a+Math.abs(p-q),0);if(s<bs){bs=s;md=p}});const c=$('#mc').getContext('2d');c.clearRect(0,0,420,90);const X=v=>10+v*4;c.strokeStyle=cs('--m');c.beginPath();c.moveTo(10,45);c.lineTo(410,45);c.stroke();P.forEach(p=>{c.beginPath();c.arc(X(p),45,6,0,7);c.fillStyle=cs('--fg');c.fill()});c.fillStyle='#ff5d8f';c.fillRect(X(mean)-4,15,8,22);c.fillStyle='#2ee59d';c.fillRect(X(md)-4,53,8,22);
+$('#mo2').textContent=`Points: 1, 2, 3, 4, ${o}\nMean centre (pink, K-Means) = ${mean.toFixed(1)}  ← dragged by the outlier\nMedoid centre (green, K-Medoids) = ${md}  ← a real point, stays in the crowd`}
+$('#m0').oninput=med;
+const KMO=[['Red','Small','Round'],['Blue','Large','Square']];
+function kmo(){const v=['ma','mb','mc3'].map(i=>$('#'+i).value),d=KMO.map(m=>m.filter((x,i)=>x!=v[i]).length);$('#mm').textContent=`Mismatches with Cluster 1 mode = ${d[0]}\nMismatches with Cluster 2 mode = ${d[1]}\n→ record joins ${d[0]==d[1]?'either cluster (tie)':'Cluster '+(d[0]<d[1]?1:2)}`}
+$('#ma').onchange=$('#mb').onchange=$('#mc3').onchange=kmo;
+/* 11 hierarchical */
+const HP=[[1,1],[1.6,1.5],[2.3,1],[6,2],[6.8,2.6],[3.6,6.5],[4.4,7.2],[8.2,6.6]];
+$('#h0').innerHTML=sl('hk','Clusters (cut the tree)',1,8,1,3);
+function hier(){const n=8,lk=$('#hl').value,k=rd('hk'),d=(a,b)=>Math.hypot(HP[a][0]-HP[b][0],HP[a][1]-HP[b][1]),cd=(A,B)=>{const ds=A.l.flatMap(a=>B.l.map(b=>d(a,b)));return lk=='single'?Math.min(...ds):Math.max(...ds)};
+let cur=HP.map((p,i)=>({l:[i],id:i,h:0})),st=[cur.slice()],hs=[];while(cur.length>1){let bi=0,bj=1,bd=1e9;for(let i=0;i<cur.length;i++)for(let j=i+1;j<cur.length;j++){const x=cd(cur[i],cur[j]);if(x<bd){bd=x;bi=i;bj=j}}const nd={l:[...cur[bi].l,...cur[bj].l],h:bd,a:cur[bi],b:cur[bj]};cur=cur.filter((_,i)=>i!=bi&&i!=bj);cur.push(nd);st.push(cur.slice());hs.push(bd)}
+const root=cur[0],mH=root.h*1.15,cutH=k==n?hs[0]/2:k==1?root.h*1.07:(hs[n-k-1]+hs[n-k])/2,col={};st[n-k].forEach((c,ci)=>c.l.forEach(i=>col[i]=PAL[ci%7]));
+let c=$('#hc').getContext('2d');c.clearRect(0,0,300,240);HP.forEach((p,i)=>{c.beginPath();c.arc(20+p[0]*32,220-p[1]*28,9,0,7);c.fillStyle=col[i];c.fill();c.fillStyle='#111';c.font='bold 10px sans-serif';c.fillText(i+1,17+p[0]*32,224-p[1]*28)});
+c=$('#hd').getContext('2d');c.clearRect(0,0,300,240);let li=0;const Yc=h=>210-h/mH*190;
+function dr(nd){if(!nd.a){const x=20+li++*37;c.fillStyle=cs('--fg');c.font='11px sans-serif';c.fillText(nd.id+1,x-3,229);return{x,y:Yc(0)}}const A=dr(nd.a),B=dr(nd.b),y=Yc(nd.h);c.strokeStyle=cs('--a');c.lineWidth=2;c.setLineDash([]);c.beginPath();c.moveTo(A.x,A.y);c.lineTo(A.x,y);c.lineTo(B.x,y);c.lineTo(B.x,B.y);c.stroke();return{x:(A.x+B.x)/2,y}}
+dr(root);c.strokeStyle='#ff5d8f';c.setLineDash([6,4]);c.beginPath();c.moveTo(0,Yc(cutH));c.lineTo(300,Yc(cutH));c.stroke();c.setLineDash([])}
+$('#hl').onchange=hier;$('#h0').oninput=hier;
+$('#ag').innerHTML=[8,7,6,5,4,3,2,1].map(n=>`<span class="chip">${n}</span>`).join('');$('#di').innerHTML=[1,2,3,4,5,6,7,8].map(n=>`<span class="chip">${n}</span>`).join('');
+let hp=0;setInterval(()=>{[...$('#ag').children].forEach((e,i)=>e.classList.toggle('on',i==hp%8));[...$('#di').children].forEach((e,i)=>e.classList.toggle('on',i==hp%8));[...$('#bg1').children].forEach((e,i)=>e.classList.toggle('on',i&&i==hp%4+1));[...$('#bg2').children].forEach((e,i)=>e.classList.toggle('on',i&&i==hp%4+1));hp++},900);
+function redraw(){bayes();nb();bn();gdraw();ad(AE.length?AE[AE.length-1]:null);dist();kdraw(KMSG);elbow();med();kmo();hier()}
+bayes();nb();bn();bs();rf();ar();gr2();dist();kinit();med();kmo();hier();
+</script></body></html>
